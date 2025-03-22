@@ -42,6 +42,10 @@ It’s designed to help you write dynamic SQL without string concatenation or th
 
 ```ts
 import {sqlBuilder} from 'tiny-pg-builder';
+import {Client} from 'pg';
+
+const pg = new Client(); // or use pg.Pool if that's what you're using
+await pg.connect();
 
 const builder = sqlBuilder('SELECT * FROM users WHERE 1=1');
 
@@ -50,16 +54,20 @@ builder.add('AND status = ?', ['active']);
 builder.add('AND role IN (??)', [['admin', 'editor']]);
 
 const {text, values} = builder.build();
-// query.text   → 'SELECT * FROM users WHERE 1=1\nAND id = $1\nAND status = $2\nAND role IN ($3, $4)'
-// query.values → [42, 'active', 'admin', 'editor']
+// text   → 'SELECT * FROM users WHERE 1=1\nAND id = $1\nAND status = $2\nAND role IN ($3, $4)'
+// values → [42, 'active', 'admin', 'editor']
 
-sql.query({text, values}); // Use with pg.query()
+const result = await pg.query({text, values});
 ```
 
 ## 🧪 Builder API Advanced Example
 
 ```ts
-import { sqlBuilder } from 'tiny-pg-builder';
+import {sqlBuilder} from 'tiny-pg-builder';
+import {Client} from 'pg';
+
+const pg = new Client(); // or use pg.Pool if that's what you're using
+await pg.connect();
 
 type UserFilters = {
   name?: string;
@@ -105,13 +113,17 @@ const {text, values} = buildUserQuery({
 // query.text   → 'SELECT * FROM users WHERE 1=1\nAND name ILIKE $1\nAND active = $2\nAND role IN ($3, $4)'
 // query.values → ['%alice%', true, 'admin', 'editor']
 
-sql.query({text, values}); // Use with pg.query()
+const result = await pg.query({text, values});
 ```
 
 ## 🧪 Example: Tagged Template
 
 ```ts
-import { sql } from 'tiny-pg-builder';
+import {sql} from 'tiny-pg-builder';
+import {Client} from 'pg';
+
+const pg = new Client(); // or use pg.Pool if that's what you're using
+await pg.connect();
 
 const ids = [1, 2, 3];
 const {text, values} = sql`SELECT * FROM logs WHERE id IN (${ids}) AND level <= ${5}`;
@@ -119,7 +131,7 @@ const {text, values} = sql`SELECT * FROM logs WHERE id IN (${ids}) AND level <= 
 // query.text → 'SELECT * FROM logs WHERE id IN ($1, $2, $3) AND level <= $4'
 // query.values → [1, 2, 3, 5]
 
-sql.query({text, values}); // Use with pg.query()
+const result = await pg.query({text, values});
 ```
 
 ## Table of Contents
