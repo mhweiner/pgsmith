@@ -12,7 +12,7 @@ It’s designed to help you write dynamic SQL without string concatenation or th
 - 💡 **Small, easy-to-learn API**
 - 🔒 **Safe and parameterized** — supports `$1`, `$2`, etc.
 - 🧩 **Compositional** — great for conditional logic
-- 🧵 **Tagged template support** for static queries
+- 🧵 **Tagged template support** for easy inline, static queries
 - 🧼 **No magic, no globals, no bloat**
 
 > Write SQL the way you want — clearly and safely.
@@ -30,29 +30,67 @@ It’s designed to help you write dynamic SQL without string concatenation or th
 **🎯 Works with `pg`**
 - Returns `{ text, values }` objects — drop-in compatible with `pg.query()`.
 
-**💬 Optional Template Literal Support**
-- Use tagged templates for simple static queries.
+**💬 Template Literal Support**
+- Use [tagged templates](#-example-tagged-template) for simple static queries.
 - Interpolates arrays into `IN ($1, $2, ...)` automatically.
 
-**📦 Zero Dependencies**
-- Fully TypeScript-native, no config required.
+**📦 Tiny, Zero Dependencies, Stable**
+- Fully TypeScript-native
+- Tiny footprint (~0.02 KB gzipped) with no dependencies
 
-## 🧪 Example: Builder API
+## 🧪 Builder API Basic Example
+
+```ts
+import {sqlBuilder} from 'tiny-pg-builder';
+
+const builder = sqlBuilder('SELECT * FROM users WHERE 1=1');
+
+builder.add('AND id = ?', [42]);
+status && builder.add('AND status = ?', ['active']);
+builder.add('AND role IN (??)', [['admin', 'editor']]);
+
+const query = builder.build();
+// query.text   → 'SELECT * FROM users WHERE 1=1\nAND id = $1\nAND status = $2\nAND role IN ($3, $4)'
+// query.values → [42, 'active', 'admin', 'editor']
+```
+
+## 🧪 Builder API Advanced Example
 
 ```ts
 import { sqlBuilder } from 'tiny-pg-builder';
 
-const builder = sqlBuilder('SELECT * FROM logs WHERE 1=1');
+type UserFilters = {
+  name?: string;
+  active?: boolean;
+  roles?: string[];
+};
 
-builder.add('AND team_id = ?', [123]);
-builder.add('AND level <= ?', [3]);
+function buildUserQuery(filters: UserFilters) {
+  const builder = sqlBuilder('SELECT * FROM users WHERE 1=1');
 
-// Use `??` to expand an array into multiple parameters
-builder.add('AND component_id IN (??)', [[1, 2, 3]]);
+  if (filters.name) {
+    builder.add('AND name ILIKE ?', [`%${filters.name}%`]);
+  }
 
-const query = builder.build();
-// query.text → 'SELECT * FROM logs WHERE 1=1\nAND team_id = $1\nAND level <= $2\nAND component_id IN ($3, $4, $5)'
-// query.values → [123, 3, 1, 2, 3]
+  if (filters.active !== undefined) {
+    builder.add('AND active = ?', [filters.active]);
+  }
+
+  if (filters.roles?.length) {
+    builder.add('AND role IN (??)', [filters.roles]);
+  }
+
+  return builder.build();
+}
+
+const query = buildUserQuery({
+  name: 'alice',
+  active: true,
+  roles: ['admin', 'editor'],
+});
+
+// query.text   → 'SELECT * FROM users WHERE 1=1\nAND name ILIKE $1\nAND active = $2\nAND role IN ($3, $4)'
+// query.values → ['%alice%', true, 'admin', 'editor']
 ```
 
 ## 🧪 Example: Tagged Template
