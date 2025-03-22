@@ -1,0 +1,8 @@
+.idea
+.DS_Store
+node_modules
+dist
+.nyc_output
+coverage
+.vscode
+integration-tests/config/Config.d.ts
