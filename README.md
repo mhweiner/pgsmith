@@ -86,7 +86,7 @@ npm i tiny-pg-builder
 
 Then use `sqlBuilder()` for dynamic queries, or `sql` tagged templates for simple inline queries.
 
-## Philosophy
+## Philosophy 
 
 Most SQL query helpers are either:
 - Too verbose (string concatenation, manual `$1`)
