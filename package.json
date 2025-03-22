@@ -1,10 +1,10 @@
 {
-  "name": "pg-sql-builder",
+  "name": "tiny-pg-builder",
   "private": false,
   "version": "0.0.0-autorel",
-  "description": "Brek is a powerful yet simple configuration library for Node.js. It’s structured, typed, and designed for dynamic configuration loading, making it perfect for securely managing secrets (e.g., AWS Secrets Manager). Written in TypeScript for safety and ease of use. Sponsored by Aeroview.",
+  "description": "A safe, tiny, parameterized SQL builder for use with pg.",
   "license": "MIT",
-  "author": "Marc H. Weiner <mhweiner234@gmail.com> (https://mhweiner.com)",
+  "author": "Marc H. Weiner <mhweiner234@gmail.com> (https://linkedin.com/in/mhweiner)",
   "main": "./dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -16,7 +16,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mhweiner/brek.git"
+    "url": "git+https://github.com/mhweiner/tiny-pg-builder.git"
   },
   "scripts": {
     "prepare": "npm run build",
@@ -24,30 +24,8 @@
     "lint": "eslint ./ --ext .js,.ts",
     "build": "tsc -p tsconfig.build.json"
   },
-  "homepage": "https://github.com/mhweiner/brek",
-  "keywords": [
-    "config",
-    "configuration",
-    "node",
-    "typescript",
-    "typed",
-    "lambda",
-    "aws",
-    "secrets",
-    "manager",
-    "paramter",
-    "store",
-    "aws secrets manager",
-    "aws parameter store",
-    "loader",
-    "env",
-    "files",
-    "node-config",
-    "ts-config-node",
-    "ts-node-config",
-    "node-config-ts",
-    "lambdaconf"
-  ],
+  "homepage": "https://github.com/mhweiner/tiny-pg-builder",
+  "keywords": ["sql", "postgres", "pg", "query", "builder"],
   "devDependencies": {
     "@types/node": "17.0.45",
     "@typescript-eslint/eslint-plugin": "^5.7.0",

@@ -1,11 +1,11 @@
-# pg-sql-builder
+# tiny-pg-builder
 
-[![build status](https://github.com/mhweiner/pg-sql-builder/actions/workflows/release.yml/badge.svg)](https://github.com/mhweiner/pg-sql-builder/actions)
+[![build status](https://github.com/mhweiner/tiny-pg-builder/actions/workflows/release.yml/badge.svg)](https://github.com/mhweiner/tiny-pg-builder/actions)
 [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-blue)]()
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 [![AutoRel](https://img.shields.io/badge/v2-AutoRel?label=AutoRel&labelColor=0ab5fc&color=grey&link=https%3A%2F%2Fgithub.com%2Fmhweiner%2Fautorel)](https://github.com/mhweiner/autorel)
 
-**pg-sql-builder** is a tiny utility for safely building parameterized SQL queries for use with [`pg`](https://github.com/brianc/node-postgres).
+**tiny-pg-builder** is a tiny utility for safely building parameterized SQL queries for use with [`pg`](https://github.com/brianc/node-postgres).
 
 It’s designed to help you write dynamic SQL without string concatenation or the complexity of an ORM.
 
@@ -40,7 +40,7 @@ It’s designed to help you write dynamic SQL without string concatenation or th
 ## 🧪 Example: Builder API
 
 ```ts
-import { sqlBuilder } from 'pg-sql-builder';
+import { sqlBuilder } from 'tiny-pg-builder';
 
 const builder = sqlBuilder('SELECT * FROM logs WHERE 1=1');
 
@@ -58,7 +58,7 @@ const query = builder.build();
 ## 🧪 Example: Tagged Template
 
 ```ts
-import { sql } from 'pg-sql-builder';
+import { sql } from 'tiny-pg-builder';
 
 const ids = [1, 2, 3];
 const query = sql`SELECT * FROM logs WHERE id IN (${ids}) AND level <= ${5}`;
@@ -81,7 +81,7 @@ const query = sql`SELECT * FROM logs WHERE id IN (${ids}) AND level <= ${5}`;
 Install with npm:
 
 ```bash
-npm i pg-sql-builder
+npm i tiny-pg-builder
 ```
 
 Then use `sqlBuilder()` for dynamic queries, or `sql` tagged templates for simple inline queries.
@@ -92,12 +92,12 @@ Most SQL query helpers are either:
 - Too verbose (string concatenation, manual `$1`)
 - Too magical (ORMs, query builders, AST-based tools)
 
-`pg-sql-builder` gives you just enough tooling to avoid repetition — without hiding your SQL behind a DSL. You stay in control of the query, and the parameters stay safe.
+`tiny-pg-builder` gives you just enough tooling to avoid repetition — without hiding your SQL behind a DSL. You stay in control of the query, and the parameters stay safe.
 
 ## Contributing
 
 - Star this repo if you like it ⭐️
-- Open an [issue](https://github.com/mhweiner/pg-sql-builder/issues) for bugs or ideas
+- Open an [issue](https://github.com/mhweiner/tiny-pg-builder/issues) for bugs or ideas
 - Submit a PR against `main` and request a review
 
 ## Related Projects
