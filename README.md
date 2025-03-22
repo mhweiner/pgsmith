@@ -46,7 +46,7 @@ import {sqlBuilder} from 'tiny-pg-builder';
 const builder = sqlBuilder('SELECT * FROM users WHERE 1=1');
 
 builder.add('AND id = ?', [42]);
-status && builder.add('AND status = ?', ['active']);
+builder.add('AND status = ?', ['active']);
 builder.add('AND role IN (??)', [['admin', 'editor']]);
 
 const query = builder.build();
@@ -54,7 +54,7 @@ const query = builder.build();
 // query.values → [42, 'active', 'admin', 'editor']
 ```
 
-## 🧪 Builder API Advanced Example
+## 🧪 Builder API Advanced Example (Showing conditionals)
 
 ```ts
 import { sqlBuilder } from 'tiny-pg-builder';
