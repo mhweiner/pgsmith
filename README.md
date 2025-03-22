@@ -119,19 +119,18 @@ const result = await pg.query({text, values});
 ## 🧪 Example: Tagged Template
 
 ```ts
-import {sql} from 'tiny-pg-builder';
-import {Client} from 'pg';
-
-const pg = new Client(); // or use pg.Pool if that's what you're using
-await pg.connect();
+import { sql } from 'tiny-pg-builder';
 
 const ids = [1, 2, 3];
-const {text, values} = sql`SELECT * FROM logs WHERE id IN (${ids}) AND level <= ${5}`;
+const query = sql`
+  SELECT * FROM logs
+  WHERE id IN (${ids})
+  AND level <= ${5}
+`;
 
-// query.text → 'SELECT * FROM logs WHERE id IN ($1, $2, $3) AND level <= $4'
-// query.values → [1, 2, 3, 5]
+// query → { text: 'SELECT * FROM logs WHERE id IN ($1, $2, $3) AND level <= $4', values: [1, 2, 3, 5] }
 
-const result = await pg.query({text, values});
+// Use directly with: pg.query(query)
 ```
 
 ## Table of Contents
