@@ -49,9 +49,11 @@ builder.add('AND id = ?', [42]);
 builder.add('AND status = ?', ['active']);
 builder.add('AND role IN (??)', [['admin', 'editor']]);
 
-const query = builder.build();
+const {text, values} = builder.build();
 // query.text   → 'SELECT * FROM users WHERE 1=1\nAND id = $1\nAND status = $2\nAND role IN ($3, $4)'
 // query.values → [42, 'active', 'admin', 'editor']
+
+sql.query({text, values}); // Use with pg.query()
 ```
 
 ## 🧪 Builder API Advanced Example
