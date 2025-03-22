@@ -54,7 +54,7 @@ const query = builder.build();
 // query.values → [42, 'active', 'admin', 'editor']
 ```
 
-## 🧪 Builder API Advanced Example (Showing conditionals)
+## 🧪 Builder API Advanced Example
 
 ```ts
 import { sqlBuilder } from 'tiny-pg-builder';
@@ -63,6 +63,10 @@ type UserFilters = {
   name?: string;
   active?: boolean;
   roles?: string[];
+  ageBetween?: {
+    from: number;
+    to: number;
+  };
 };
 
 function buildUserQuery(filters: UserFilters) {
@@ -80,10 +84,17 @@ function buildUserQuery(filters: UserFilters) {
     builder.add('AND role IN (??)', [filters.roles]);
   }
 
+  if (filters.ageBetween) {
+    builder.add('AND age BETWEEN ? AND ?', [
+      filters.ageBetween.from,
+      filters.ageBetween.to,
+    ]);
+  }
+
   return builder.build();
 }
 
-const query = buildUserQuery({
+const {text, values} = buildUserQuery({
   name: 'alice',
   active: true,
   roles: ['admin', 'editor'],
@@ -91,6 +102,8 @@ const query = buildUserQuery({
 
 // query.text   → 'SELECT * FROM users WHERE 1=1\nAND name ILIKE $1\nAND active = $2\nAND role IN ($3, $4)'
 // query.values → ['%alice%', true, 'admin', 'editor']
+
+sql.query({text, values}); // Use with pg.query()
 ```
 
 ## 🧪 Example: Tagged Template
@@ -99,10 +112,12 @@ const query = buildUserQuery({
 import { sql } from 'tiny-pg-builder';
 
 const ids = [1, 2, 3];
-const query = sql`SELECT * FROM logs WHERE id IN (${ids}) AND level <= ${5}`;
+const {text, values} = sql`SELECT * FROM logs WHERE id IN (${ids}) AND level <= ${5}`;
 
 // query.text → 'SELECT * FROM logs WHERE id IN ($1, $2, $3) AND level <= $4'
 // query.values → [1, 2, 3, 5]
+
+sql.query({text, values}); // Use with pg.query()
 ```
 
 ## Table of Contents
