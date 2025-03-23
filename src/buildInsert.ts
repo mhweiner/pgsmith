@@ -1,8 +1,10 @@
 import {SqlQuery} from '.';
 
-export function buildInsert<T extends Record<string, any>>(
+export function buildInsert<
+    Data extends Record<string, any>
+>(
     table: string,
-    data: T,
+    data: Data,
     options?: { returning?: string | boolean }
 ): SqlQuery {
 

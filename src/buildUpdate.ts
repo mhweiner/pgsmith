@@ -1,9 +1,12 @@
 import {SqlQuery} from '.';
 
-export function buildUpdate<T extends Record<string, any>>(
+export function buildUpdate<
+    Data extends Record<string, any>,
+    Where extends Record<string, any>
+>(
     table: string,
-    data: Partial<T>,
-    where: Partial<T>,
+    data: Data,
+    where: Where,
     options?: { returning?: boolean | string }
 ): SqlQuery {
 
