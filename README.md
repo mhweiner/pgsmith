@@ -16,6 +16,7 @@ _Write SQL the way you want — clearly and safely._
 **🔐 Safe and Convenient**
 - Automatically numbers placeholders (`$1`, `$2`, …) to prevent SQL injection.
 - Handles arrays via `??` for `IN (...)` clauses.
+- Take advantage of parameterized queries for better performance.
 
 **🧰 Flexible Builder API**
 - Dynamically construct queries with conditionals or loops.
@@ -28,9 +29,10 @@ _Write SQL the way you want — clearly and safely._
 - Use [tagged templates](#-example-tagged-template) for simple static queries.
 - Interpolates arrays into `IN ($1, $2, ...)` automatically.
 
-**📦 Tiny, Zero Dependencies, Stable**
+**📦 Tiny, Zero Dependencies, Reliable & Stable**
 - Fully TypeScript-native
-- Tiny footprint (~0.02 KB gzipped) with no dependencies
+- Lightweight (~0.02 KB gzipped) with no dependencies
+- 100% unit test coverage
 
 ## Builder API Quick Example
 
