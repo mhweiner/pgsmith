@@ -2,7 +2,7 @@ import {SqlQuery} from '.';
 
 export function buildUpdate<T extends Record<string, any>>(
     table: string,
-    data: T,
+    data: Partial<T>,
     where: Partial<T>,
     options?: { returning?: boolean | string }
 ): SqlQuery {
