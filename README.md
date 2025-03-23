@@ -5,13 +5,19 @@
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 [![AutoRel](https://img.shields.io/badge/v2-AutoRel?label=AutoRel&labelColor=0ab5fc&color=grey&link=https%3A%2F%2Fgithub.com%2Fmhweiner%2Fautorel)](https://github.com/mhweiner/autorel)
 
-**tiny-pg-builder** is a tiny utility for safely building parameterized SQL queries for use with [`pg`](https://github.com/brianc/node-postgres).
+**tiny-pg-builder** is a utility for safely building parameterized SQL queries for use with [`pg`](https://github.com/brianc/node-postgres).
+
+```ts
+// we also support tagged templates, insert from objects, other helpers, etc.
+const builder = sqlBuilder('SELECT * FROM users WHERE 1=1');
+builder.add('AND status = ?', ['active']);
+builder.add('AND role IN (??)', [['admin', 'editor']]);
+pg.query(builder.build());
+```
 
 It’s designed to help you write dynamic SQL without string concatenation or the complexity of an ORM.
 
 _Write SQL the way you want — clearly and safely._
-
-## ✨ Features
 
 **🔐 Safe and Convenient**
 - Automatically numbers placeholders (`$1`, `$2`, …) to prevent SQL injection.
@@ -22,6 +28,9 @@ _Write SQL the way you want — clearly and safely._
 - Dynamically construct queries with conditionals or loops.
 - Easily compose from multiple pieces.
 
+**🛠️ Object-based helpers**
+- Generate `INSERT`, `UPDATE`, and `WHERE` clauses [from objects](docs/api.md).
+
 **🎯 Works with `pg`**
 - Returns `{ text, values }` objects — drop-in compatible with `pg.query()`.
 
@@ -29,12 +38,24 @@ _Write SQL the way you want — clearly and safely._
 - Use [tagged templates](#-example-tagged-template) for simple static queries.
 - Interpolates arrays into `IN ($1, $2, ...)` automatically.
 
-**📦 Tiny, Zero Dependencies, Reliable & Stable**
+**📦 Zero Dependencies, Reliable & Stable**
 - Fully TypeScript-native
-- Lightweight (~0.02 KB gzipped) with no dependencies
+- No dependencies, no bloat
 - 100% unit test coverage
 
-## Builder API Quick Example
+## Table of Contents
+
+- [Installation](#installation)
+- [Examples](#examples)
+- [API Reference](docs/api.md)
+- [Philosophy](#philosophy)
+- [Contributing](#contributing)
+- [Related Projects](#related-projects)
+- [License](#license)
+
+## Examples
+
+### Builder API Quick Example
 
 ```ts
 import {sqlBuilder} from 'tiny-pg-builder';
@@ -53,7 +74,9 @@ const query = builder.build();
 // pg.query(query)
 ```
 
-## Tagged Template Quick Example
+See how we can use this to build a [real-world dynamic search query](docs/dynamicSearchQueryExample.md).
+
+### Tagged Template Example
 
 ```ts
 import {sql} from 'tiny-pg-builder';
@@ -74,137 +97,46 @@ const query = sql`
 // pg.query(query)
 ```
 
-## Real World Builder Query Example
+### 📝 Insert From Object Example
 
 ```ts
-import {sqlBuilder} from 'tiny-pg-builder';
-import {Client} from 'pg';
+import {buildInsert} from 'tiny-pg-builder';
 
-const pg = new Client(); // or use pg.Pool if that's what you're using
-await pg.connect();
-
-type UserFilters = {
-  name?: string;
-  active?: boolean;
-  roles?: string[];
-  ageBetween?: {
-    from: number;
-    to: number;
-  };
+const user = {
+  firstName: 'Alice',
+  lastName: 'Smith',
+  email: 'alice@example.com',
+  isActive: true,
 };
 
-function buildUserQuery(filters: UserFilters) {
-  const builder = sqlBuilder('SELECT * FROM users WHERE 1=1');
+const query = buildInsert('users', user, { returning: true });
 
-  if (filters.name) {
-    builder.add('AND name ILIKE ?', [`%${filters.name}%`]);
-  }
+// query.text:
+// INSERT INTO "users" ("firstName", "lastName", "email", "isActive")
+// VALUES ($1, $2, $3, $4) RETURNING *
 
-  if (filters.active !== undefined) {
-    builder.add('AND active = ?', [filters.active]);
-  }
+// query.values:
+// ['Alice', 'Smith', 'alice@example.com', true]
 
-  if (filters.roles?.length) {
-    builder.add('AND role IN (??)', [filters.roles]);
-  }
-
-  if (filters.ageBetween) {
-    builder.add('AND age BETWEEN ? AND ?', [
-      filters.ageBetween.from,
-      filters.ageBetween.to,
-    ]);
-  }
-
-  return builder.build();
-}
-
-const query = buildUserQuery({
-  name: 'alice',
-  active: true,
-  roles: ['admin', 'editor'],
-});
-
-// query.text   → 'SELECT * FROM users WHERE 1=1\nAND name ILIKE $1\nAND active = $2\nAND role IN ($3, $4)'
-// query.values → ['%alice%', true, 'admin', 'editor']
-
-const result = await pg.query({text, values});
+// pg.query(query)
 ```
 
-## Getting Started
-
-Install with npm:
+## Installation
 
 ```bash
 npm i tiny-pg-builder
 ```
 
-Then use `sqlBuilder()` for dynamic queries, or `sql` tagged templates for simple inline queries.
-
 ## API Reference
 
-### `sqlBuilder(base: string): SqlBuilder`
-
-Creates a new SQL builder instance. Use this when you want to construct dynamic queries conditionally.
-
-```ts
-const builder = sqlBuilder('SELECT * FROM users WHERE 1=1');
-builder.add('AND active = ?', [true]);
-const query = builder.build();
-// → { text: 'SELECT * FROM users WHERE 1=1\nAND active = $1', values: [true] }
-```
-
----
-
-### `sql(strings: TemplateStringsArray, ...values: any[]): SqlQuery`
-
-Tagged template for inline SQL. Use this when the query structure is known ahead of time.
-
-```ts
-const ids = [1, 2, 3];
-const query = sql`SELECT * FROM logs WHERE id IN (${ids}) AND level <= ${5}`;
-// → { text: 'SELECT * FROM logs WHERE id IN ($1, $2, $3) AND level <= $4', values: [1, 2, 3, 5] }
-```
-
----
-
-### type `SqlBuilder`
-
-#### `add(clause: string, values?: any[]): void`
-
-Appends a new SQL fragment and any associated parameter values.  
-Use `?` as placeholders for individual values, and `??` to expand arrays (e.g., for `IN (...)` clauses).
-
-```ts
-builder.add('AND name = ?', ['alice']);
-builder.add('AND role IN (??)', [['admin', 'editor']]);
-```
-
----
-
-#### `build(): SqlQuery`
-
-Finalizes the query and returns a `{ text, values }` object, compatible with `pg.query()`.
-
-```ts
-const query = builder.build();
-// query.text   → '...'
-// query.values → [...]
-```
-
----
-
-### type `SqlQuery`
-
-A plain object with the following shape:
-
-```ts
-type SqlQuery = {
-  text: string;
-  values: any[];
-};
-```
-
-This format is directly compatible with `pg.query(query)` from [`node-postgres`](https://github.com/brianc/node-postgres).
+- [sqlBuilder](docs/api.md#sqlbuilder)
+- [sql tagged templates](docs/api.md#sql)
+- [buildInsert](docs/api.md#buildinsert)
+- [buildInsertMany](docs/api.md#buildinsertmany)
+- [buildUpdate](docs/api.md#buildupdate)
+- [buildWhere](docs/api.md#buildwhere)
+- [SqlBuilder type](docs/api.md#type-sqlbuilder)
+- [SqlQuery type](docs/api.md#type-sqlquery)
 
 ## Philosophy
 

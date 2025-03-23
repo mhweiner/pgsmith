@@ -1,8 +1,8 @@
-import type {PgQuery} from '.';
+import type {SqlQuery} from '.';
 
 export function sqlBuilder(clause: string, params: any[] = []): {
     add: (clause: string, params?: any[]) => void
-    build: () => PgQuery
+    build: () => SqlQuery
 } {
 
     const {clause: renderedClause, params: newParams} = transformClause(clause, params, 0);
@@ -21,7 +21,7 @@ export function sqlBuilder(clause: string, params: any[] = []): {
 
     };
 
-    const build = (): PgQuery => {
+    const build = (): SqlQuery => {
 
         isBuilt = true;
         return {

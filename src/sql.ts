@@ -1,6 +1,6 @@
-import type {PgQuery} from '.';
+import type {SqlQuery} from '.';
 
-export function sql(strings: TemplateStringsArray, ...values: any[]): PgQuery {
+export function sql(strings: TemplateStringsArray, ...values: any[]): SqlQuery {
 
     let text = '';
     const finalValues: any[] = [];

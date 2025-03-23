@@ -2,7 +2,7 @@
   "name": "tiny-pg-builder",
   "private": false,
   "version": "0.0.0-autorel",
-  "description": "A safe, tiny, parameterized SQL builder for use with pg.",
+  "description": "A tiny utility for building safe, parameterized SQL queries with `pg`.",
   "license": "MIT",
   "author": "Marc H. Weiner <mhweiner234@gmail.com> (https://linkedin.com/in/mhweiner)",
   "main": "./dist/index.js",
