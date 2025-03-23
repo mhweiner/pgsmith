@@ -9,17 +9,11 @@
 
 It’s designed to help you write dynamic SQL without string concatenation or the complexity of an ORM.
 
-- 💡 **Small, easy-to-learn API**
-- 🔒 **Safe and parameterized** — supports `$1`, `$2`, etc.
-- 🧩 **Compositional** — great for conditional logic
-- 🧵 **Tagged template support** for easy inline, static queries
-- 🧼 **No magic, no globals, no bloat**
-
-> Write SQL the way you want — clearly and safely.
+_Write SQL the way you want — clearly and safely._
 
 ## ✨ Features
 
-**🔐 Safe by Default**
+**🔐 Safe and Convenient**
 - Automatically numbers placeholders (`$1`, `$2`, …) to prevent SQL injection.
 - Handles arrays via `??` for `IN (...)` clauses.
 
@@ -38,14 +32,10 @@ It’s designed to help you write dynamic SQL without string concatenation or th
 - Fully TypeScript-native
 - Tiny footprint (~0.02 KB gzipped) with no dependencies
 
-## 🧪 Builder API Basic Example
+## Builder API Quick Example
 
 ```ts
 import {sqlBuilder} from 'tiny-pg-builder';
-import {Client} from 'pg';
-
-const pg = new Client(); // or use pg.Pool if that's what you're using
-await pg.connect();
 
 const builder = sqlBuilder('SELECT * FROM users WHERE 1=1');
 
@@ -53,14 +43,38 @@ builder.add('AND id = ?', [42]);
 builder.add('AND status = ?', ['active']);
 builder.add('AND role IN (??)', [['admin', 'editor']]);
 
-const {text, values} = builder.build();
-// text   → 'SELECT * FROM users WHERE 1=1\nAND id = $1\nAND status = $2\nAND role IN ($3, $4)'
-// values → [42, 'active', 'admin', 'editor']
+const query = builder.build();
+
+// query.text → 'SELECT * FROM users WHERE 1=1\nAND id = $1\nAND status = $2\nAND role IN ($3, $4)'
+// query.values → [42, 'active', 'admin', 'editor']
+
+// pg.query(query)
 
 const result = await pg.query({text, values});
 ```
 
-## 🧪 Builder API Advanced Example
+## Tagged Template Quick Example
+
+```ts
+import { sql } from 'tiny-pg-builder';
+
+const ids = [1, 2, 3];
+
+const query = sql`
+  SELECT * FROM logs
+  WHERE id IN (${ids})
+  AND level <= ${5}
+`;
+
+// query → {
+//   text: 'SELECT * FROM logs WHERE id IN ($1, $2, $3) AND level <= $4',
+//   values: [1, 2, 3, 5]
+// }
+
+// pg.query(query)
+```
+
+## Real World Builder Query Example
 
 ```ts
 import {sqlBuilder} from 'tiny-pg-builder';
@@ -104,7 +118,7 @@ function buildUserQuery(filters: UserFilters) {
   return builder.build();
 }
 
-const {text, values} = buildUserQuery({
+const query = buildUserQuery({
   name: 'alice',
   active: true,
   roles: ['admin', 'editor'],
@@ -116,32 +130,6 @@ const {text, values} = buildUserQuery({
 const result = await pg.query({text, values});
 ```
 
-## 🧪 Example: Tagged Template
-
-```ts
-import { sql } from 'tiny-pg-builder';
-
-const ids = [1, 2, 3];
-const query = sql`
-  SELECT * FROM logs
-  WHERE id IN (${ids})
-  AND level <= ${5}
-`;
-
-// query → { text: 'SELECT * FROM logs WHERE id IN ($1, $2, $3) AND level <= $4', values: [1, 2, 3, 5] }
-
-// Use directly with: pg.query(query)
-```
-
-## Table of Contents
-
-- [Getting Started](#getting-started)
-- [Examples](#examples)
-- [API Reference](docs/api.md)
-- [Philosophy](#philosophy)
-- [Contributing](#contributing)
-- [License](LICENSE)
-
 ## Getting Started
 
 Install with npm:
@@ -151,6 +139,72 @@ npm i tiny-pg-builder
 ```
 
 Then use `sqlBuilder()` for dynamic queries, or `sql` tagged templates for simple inline queries.
+
+## API Reference
+
+### `sqlBuilder(base: string): SqlBuilder`
+
+Creates a new SQL builder instance. Use this when you want to construct dynamic queries conditionally.
+
+```ts
+const builder = sqlBuilder('SELECT * FROM users WHERE 1=1');
+builder.add('AND active = ?', [true]);
+const query = builder.build();
+// → { text: 'SELECT * FROM users WHERE 1=1\nAND active = $1', values: [true] }
+```
+
+---
+
+### `sql(strings: TemplateStringsArray, ...values: any[]): SqlQuery`
+
+Tagged template for inline SQL. Use this when the query structure is known ahead of time.
+
+```ts
+const ids = [1, 2, 3];
+const query = sql`SELECT * FROM logs WHERE id IN (${ids}) AND level <= ${5}`;
+// → { text: 'SELECT * FROM logs WHERE id IN ($1, $2, $3) AND level <= $4', values: [1, 2, 3, 5] }
+```
+
+---
+
+### type `SqlBuilder`
+
+#### `add(clause: string, values?: any[]): void`
+
+Appends a new SQL fragment and any associated parameter values.  
+Use `?` as placeholders for individual values, and `??` to expand arrays (e.g., for `IN (...)` clauses).
+
+```ts
+builder.add('AND name = ?', ['alice']);
+builder.add('AND role IN (??)', [['admin', 'editor']]);
+```
+
+---
+
+#### `build(): SqlQuery`
+
+Finalizes the query and returns a `{ text, values }` object, compatible with `pg.query()`.
+
+```ts
+const query = builder.build();
+// query.text   → '...'
+// query.values → [...]
+```
+
+---
+
+### type `SqlQuery`
+
+A plain object with the following shape:
+
+```ts
+type SqlQuery = {
+  text: string;
+  values: any[];
+};
+```
+
+This format is directly compatible with `pg.query(query)` from [`node-postgres`](https://github.com/brianc/node-postgres).
 
 ## Philosophy 
 
