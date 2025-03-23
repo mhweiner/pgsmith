@@ -49,14 +49,12 @@ const query = builder.build();
 // query.values → [42, 'active', 'admin', 'editor']
 
 // pg.query(query)
-
-const result = await pg.query({text, values});
 ```
 
 ## Tagged Template Quick Example
 
 ```ts
-import { sql } from 'tiny-pg-builder';
+import {sql} from 'tiny-pg-builder';
 
 const ids = [1, 2, 3];
 
