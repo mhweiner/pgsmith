@@ -206,13 +206,16 @@ type SqlQuery = {
 
 This format is directly compatible with `pg.query(query)` from [`node-postgres`](https://github.com/brianc/node-postgres).
 
-## Philosophy 
+## Philosophy
 
-Most SQL query helpers are either:
-- Too verbose (string concatenation, manual `$1`)
-- Too magical (ORMs, query builders, AST-based tools)
+Many SQL libraries either go too far or not far enough.
 
-`tiny-pg-builder` gives you just enough tooling to avoid repetition — without hiding your SQL behind a DSL. You stay in control of the query, and the parameters stay safe.
+- Some are **too low-level**, forcing you to manually manage strings, whitespace, and `$1` placeholders.
+- Others are **too abstract**, hiding your SQL behind DSLs, query builders, or full ORMs.
+
+`tiny-pg-builder` doesn't try to replace SQL — it just gives you a minimal toolset to work with it safely and dynamically, without repetition or risk.
+
+The goal is to make SQL composable, readable, and easy to maintain&mdash;while keeping you in full control with minimal abstraction, overhead, or magic.
 
 ## Contributing
 
