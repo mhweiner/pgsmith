@@ -8,7 +8,7 @@
 **tiny-pg-builder** is a utility for safely building parameterized SQL queries for use with [`pg`](https://github.com/brianc/node-postgres).
 
 ```ts
-// we also support tagged templates, insert from objects, other helpers, etc.
+// we also support tagged templates, insert from objects, and more!
 const builder = sqlBuilder('SELECT * FROM users WHERE 1=1');
 builder.add('AND status = ?', ['active']);
 builder.add('AND role IN (??)', [['admin', 'editor']]);
@@ -68,10 +68,12 @@ builder.add('AND role IN (??)', [['admin', 'editor']]);
 
 const query = builder.build();
 
-// query.text → 'SELECT * FROM users WHERE 1=1\nAND id = $1\nAND status = $2\nAND role IN ($3, $4)'
-// query.values → [42, 'active', 'admin', 'editor']
-
 // pg.query(query)
+
+// query.text: 
+// 'SELECT * FROM users WHERE 1=1\nAND id = $1\nAND status = $2\nAND role IN ($3, $4)'
+// query.values: 
+// [42, 'active', 'admin', 'editor']
 ```
 
 See how we can use this to build a [real-world dynamic search query](docs/dynamicSearchQueryExample.md).
@@ -88,13 +90,12 @@ const query = sql`
   WHERE id IN (${ids})
   AND level <= ${5}
 `;
-
-// query → {
-//   text: 'SELECT * FROM logs WHERE id IN ($1, $2, $3) AND level <= $4',
-//   values: [1, 2, 3, 5]
-// }
-
 // pg.query(query)
+
+// query.text:
+// SELECT * FROM logs WHERE id IN ($1, $2, $3) AND level <= $4
+// query.values:
+// [1, 2, 3, 5]
 ```
 
 ### 📝 Insert From Object Example
@@ -111,14 +112,13 @@ const user = {
 
 const query = buildInsert('users', user, { returning: true });
 
+// pg.query(query)
+
 // query.text:
 // INSERT INTO "users" ("firstName", "lastName", "email", "isActive")
 // VALUES ($1, $2, $3, $4) RETURNING *
-
 // query.values:
 // ['Alice', 'Smith', 'alice@example.com', true]
-
-// pg.query(query)
 ```
 
 ## Installation
