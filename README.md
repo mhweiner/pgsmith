@@ -10,7 +10,7 @@
 ```ts
 // tagged template
 sql`SELECT * FROM logs WHERE id IN (${[8, 9]}) AND level <= ${5}`;
-// { text: 'SELECT * FROM logs WHERE id IN ($1, $2) AND level <= $3', values: [8, 9, 5] }
+// {text: 'SELECT * FROM logs WHERE id IN ($1, $2) AND level <= $3', values: [8, 9, 5]}
 // Pass this right into pg.query()
 
 // Conditional query building
