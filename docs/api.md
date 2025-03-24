@@ -1,7 +1,7 @@
 # API Reference
 
-- [sqlBuilder](#sqlbuilder)
 - [sql tagged templates](#sql)
+- [sqlBuilder](#sqlbuilder)
 - [buildInsert](#buildinsert)
 - [buildInsertMany](#buildinsertmany)
 - [buildUpdate](#buildupdate)
@@ -10,28 +10,6 @@
 - [SqlQuery type](#type-sqlquery)
 
 ## 🧱 Methods
-
-### `sqlBuilder`
-
-```ts
-sqlBuilder(base: string): SqlBuilder
-```
-
-Creates a new builder for dynamic queries.
-
-```ts
-const builder = sqlBuilder('SELECT * FROM users WHERE 1=1');
-builder.add('AND active = ?', [true]);
-const query = builder.build();
-pg.query(query);
-
-// query.text:
-// SELECT * FROM users WHERE 1=1\nAND active = $1
-// query.values:
-// [true]
-```
-
----
 
 ### `sql`
 
@@ -50,6 +28,30 @@ pg.query(query);
 // SELECT * FROM logs WHERE id IN ($1, $2, $3) AND level <= $4
 // query.values:
 // [1, 2, 3, 5]
+```
+
+---
+
+### `sqlBuilder`
+
+```ts
+sqlBuilder(initial: SqlQuery): SqlBuilder
+```
+
+See [SqlBuilder](#type-sqlbuilder) for the return type/interface.
+
+Creates a new builder for dynamic queries.
+
+```ts
+const builder = sqlBuilder(sql`SELECT * FROM users WHERE 1=1`);
+builder.add(sql`AND active = ${true}`);
+const query = builder.build();
+pg.query(query);
+
+// query.text:
+// SELECT * FROM users WHERE 1=1\nAND active = $1
+// query.values:
+// [true]
 ```
 
 ---
@@ -176,8 +178,8 @@ Throws if the object is empty.
 
 The object returned by `sqlBuilder()`:
 
-- `.add(clause: string, values?: any[])`
-  - Appends a new SQL fragment using `?` (or `??` for arrays)
+- `.add(clause: SqlQuery): void`
+  - Appends a new SQL clause to the builder using any valid `SqlQuery` object. Each clause is separated by a newline. Valid inputs include `sql` tagged templates, `buildWhere()`, or any function that returns a `SqlQuery`.
 - `.build(): SqlQuery`
   - Returns `{ text, values }` for `pg.query()`
 

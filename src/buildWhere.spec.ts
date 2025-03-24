@@ -12,7 +12,7 @@ test('buildWhere() builds WHERE clause with multiple fields', (assert) => {
 
     assert.equal(
         query.text,
-        '"id" = $1 AND "isActive" = $2 AND "role" = $3',
+        'WHERE "id" = $1 AND "isActive" = $2 AND "role" = $3',
         'Should generate correct WHERE clause'
     );
 
@@ -28,7 +28,7 @@ test('buildWhere() works with single field', (assert) => {
 
     const query = buildWhere({id: 42});
 
-    assert.equal(query.text, '"id" = $1');
+    assert.equal(query.text, 'WHERE "id" = $1');
     assert.equal(query.values, [42]);
 
 });
@@ -39,6 +39,27 @@ test('buildWhere() throws for empty object', (assert) => {
         () => buildWhere({}),
         /where/i,
         'Should throw if WHERE object is empty'
+    );
+
+});
+
+test('buildWhere() supports arrays with IN clause', (assert) => {
+
+    const query = buildWhere({
+        status: ['active', 'pending'],
+        role: 'admin',
+    });
+
+    assert.equal(
+        query.text,
+        'WHERE "status" IN ($1, $2) AND "role" = $3',
+        'Should generate IN clause for array values'
+    );
+
+    assert.equal(
+        query.values,
+        ['active', 'pending', 'admin'],
+        'Should match parameter values for IN and scalar'
     );
 
 });

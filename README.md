@@ -17,11 +17,20 @@ sql`SELECT * FROM logs WHERE id IN (${[8, 9]}) AND level <= ${5}`;
 const builder = sqlBuilder(sql`SELECT * FROM users WHERE 1=1`);
 status && builder.add(sql`AND status = ${'active'}`);
 role && builder.add(sql`AND role IN (${['admin', 'editor']})`);
-pg.query(builder.build());
+const query = builder.build();
+// {text: 'SELECT * FROM users WHERE 1=1\nAND status = $1\nAND role IN ($2, $3)', values: ['active', 'admin', 'editor']}
 
 // object-based helpers
-const query = buildInsert('users', { name: 'Alice' });
+const query = buildInsert('users', {id: 1, name: 'Alice'});
+// {text: 'INSERT INTO users (id, name) VALUES ($1, $2)', values: [1, 'Alice']}
 pg.query(query);
+
+// compose from multiple pieces
+sqlBuilder(`SELECT * FROM users`)
+  .add(buildWhere({id: 1, status: 'active', role: ['admin', 'editor']}))
+  .add(sql`ORDER BY created_at DESC`)
+  .build();
+// {text: 'SELECT * FROM users WHERE id = $1 AND status = $2 AND role IN ($3, $4) ORDER BY created_at DESC', values: [1, 'active', 'admin', 'editor']}
 ```
 
 It’s designed to help you write dynamic SQL without string concatenation or the complexity of an ORM.
@@ -63,29 +72,6 @@ _Write SQL the way you want — clearly and safely._
 
 ## Examples
 
-### Builder API Quick Example
-
-```ts
-import {sqlBuilder} from 'tiny-pg-builder';
-
-const builder = sqlBuilder('SELECT * FROM users WHERE 1=1');
-
-builder.add('AND id = ?', [42]);
-builder.add('AND status = ?', ['active']);
-builder.add('AND role IN (??)', [['admin', 'editor']]);
-
-const query = builder.build();
-
-// pg.query(query)
-
-// query.text: 
-// 'SELECT * FROM users WHERE 1=1\nAND id = $1\nAND status = $2\nAND role IN ($3, $4)'
-// query.values: 
-// [42, 'active', 'admin', 'editor']
-```
-
-See how we can use this to build a [real-world dynamic search query](docs/dynamicSearchQueryExample.md).
-
 ### Tagged Template Example
 
 ```ts
@@ -105,6 +91,33 @@ const query = sql`
 // query.values:
 // [33, 22, 11, 5]
 ```
+
+### Builder API Quick Example
+
+```ts
+import {sqlBuilder} from 'tiny-pg-builder';
+
+const builder = sqlBuilder(sql`SELECT * FROM users WHERE 1=1`);
+
+builder.add(sql`AND id = ${42}`);
+builder.add(sql`AND status = ${'active'}`);
+builder.add(sql`AND role IN (${['admin', 'editor']})`);
+
+const query = builder.build();
+
+// pg.query(query)
+
+// query.text:
+// SELECT * FROM users WHERE 1=1
+// AND id = $1
+// AND status = $2
+// AND role IN ($3, $4)
+
+// query.values:
+// [42, 'active', 'admin', 'editor']
+```
+
+See how we can use this to build a [real-world dynamic search query](docs/dynamicSearchQueryExample.md).
 
 ### 📝 Insert From Object Example
 
