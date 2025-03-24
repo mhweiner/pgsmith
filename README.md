@@ -94,7 +94,7 @@ See how we can use this to build a [real-world dynamic search query](docs/dynami
 ```ts
 import {sql} from 'tiny-pg-builder';
 
-const ids = [1, 2, 3];
+const ids = [33, 22, 11];
 
 const query = sql`
   SELECT * FROM logs
@@ -106,7 +106,7 @@ const query = sql`
 // query.text:
 // SELECT * FROM logs WHERE id IN ($1, $2, $3) AND level <= $4
 // query.values:
-// [1, 2, 3, 5]
+// [33, 22, 11, 5]
 ```
 
 ### 📝 Insert From Object Example
