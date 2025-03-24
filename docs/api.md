@@ -22,7 +22,6 @@ Tagged template for inline SQL with automatic `$1` bindings.
 ```ts
 const ids = [1, 2, 3];
 const query = sql`SELECT * FROM logs WHERE id IN (${ids}) AND level <= ${5}`;
-pg.query(query);
 
 // query.text:
 // SELECT * FROM logs WHERE id IN ($1, $2, $3) AND level <= $4
@@ -46,7 +45,6 @@ Creates a new builder for dynamic queries.
 const builder = sqlBuilder(sql`SELECT * FROM users WHERE 1=1`);
 builder.add(sql`AND active = ${true}`);
 const query = builder.build();
-pg.query(query);
 
 // query.text:
 // SELECT * FROM users WHERE 1=1\nAND active = $1
@@ -59,7 +57,11 @@ pg.query(query);
 ### `buildInsert`
 
 ```ts
-buildInsert(table: string, data: Record<string, any>, options?: { returning?: boolean | string }): SqlQuery
+buildInsert(
+  table: string, 
+  data: Record<string, any>, 
+  options?: {returning?: boolean|string}
+): SqlQuery
 ```
 
 Builds a safe `INSERT` query from a plain object.
@@ -68,8 +70,7 @@ Builds a safe `INSERT` query from a plain object.
 const query = buildInsert('users', {
   name: 'Alice',
   email: 'alice@example.com',
-}, { returning: 'id' });
-pg.query(query);
+}, {returning: 'id'});
 
 // query.text:
 // INSERT INTO "users" ("name", "email") VALUES ($1, $2) RETURNING id
@@ -98,7 +99,6 @@ const query = buildInsertMany('users', [
   { name: 'Alice', email: 'a@example.com' },
   { name: 'Bob', email: 'b@example.com' },
 ]);
-pg.query(query)
 
 // query.text:
 // INSERT INTO "users" ("name", "email") VALUES ($1, $2), ($3, $4)
@@ -136,7 +136,6 @@ const query = buildUpdate(
   { id: 42 },
   { returning: true }
 );
-pg.query(query);
 
 // query.text:
 // UPDATE "users" SET "name" = $1, "isActive" = $2 WHERE "id" = $3 RETURNING *
@@ -149,26 +148,31 @@ Throws if `data` or `where` objects are empty.
 ### `buildWhere`
 
 ```ts
-buildWhere(where: Record<string, any>): SqlQuery
+buildWhere(
+  where: Record<string, any>, 
+  options?: {omitWhere?: boolean}
+): SqlQuery
 ```
 
-Generates a parameterized SQL `WHERE` clause from a plain object. Column names are safely quoted, and values are parameterized using `$1`, `$2`, etc.
+Builds a basic `WHERE` clause from a flat object.
+
+- Arrays are automatically converted into `IN (...)` clauses.
+- If `options.omitWhere` is `true`, the `WHERE` keyword is excluded from the returned text.
 
 ```ts
-const query = buildWhere({
-  id: 1,
-  isActive: true,
-  role: 'admin',
-});
+buildWhere({ id: 1, active: true });
+// → { text: 'WHERE "id" = $1 AND "active" = $2', values: [1, true] }
 
-// query.text:
-// '"id" = $1 AND "isActive" = $2 AND "role" = $3'
+buildWhere({ role: ['admin', 'editor'] });
+// → { text: 'WHERE "role" IN ($1, $2)', values: ['admin', 'editor'] }
 
-// query.values:
-// [1, true, 'admin']
+buildWhere({ id: 42 }, { omitWhere: true });
+// → { text: '"id" = $1', values: [42] }
 ```
 
-This is useful for composing custom queries, or plugging into `sqlBuilder()` or `pg.query()`.
+> **Note:** `buildWhere()` is intentionally minimal.  
+> It supports only flat key-value pairs and `IN (...)` clauses for arrays.  
+> It is **not a DSL** — use `sql` or `sqlBuilder()` for anything more advanced (e.g. `>`, `<`, `IS NULL`, `BETWEEN`, etc.).
 
 Throws if the object is empty.
 

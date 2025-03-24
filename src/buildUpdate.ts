@@ -1,4 +1,4 @@
-import {SqlQuery} from '.';
+import {buildWhere, SqlQuery} from '.';
 
 export function buildUpdate<
     Data extends Record<string, any>,
@@ -25,14 +25,16 @@ export function buildUpdate<
 
     }).join(', ');
 
-    const whereClause = whereKeys.map((key) => {
+    // Generate the WHERE clause without `WHERE` keyword
+    const whereClause = buildWhere(where, {omitWhere: true});
+    const offset = values.length;
 
-        values.push(where[key]);
-        return `"${key}" = $${values.length}`;
+    // Renumber placeholders in WHERE clause to continue from SET clause
+    const adjustedWhere = whereClause.text.replace(/\$(\d+)/g, (_, n) => `$${Number(n) + offset}`);
 
-    }).join(' AND ');
+    values.push(...whereClause.values);
 
-    let text = `UPDATE "${table}" SET ${setClause} WHERE ${whereClause}`;
+    let text = `UPDATE "${table}" SET ${setClause} WHERE ${adjustedWhere}`;
 
     if (options?.returning) {
 

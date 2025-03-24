@@ -63,3 +63,24 @@ test('buildWhere() supports arrays with IN clause', (assert) => {
     );
 
 });
+
+test('buildWhere() supports omitting WHERE keyword when omitWhere option is true', (assert) => {
+
+    const query = buildWhere(
+        {id: 99, active: true},
+        {omitWhere: true}
+    );
+
+    assert.equal(
+        query.text,
+        '"id" = $1 AND "active" = $2',
+        'Should generate clause without WHERE keyword'
+    );
+
+    assert.equal(
+        query.values,
+        [99, true],
+        'Should return correct values in order'
+    );
+
+});

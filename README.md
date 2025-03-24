@@ -159,6 +159,28 @@ npm i tiny-pg-builder
 - [SqlBuilder type](docs/api.md#type-sqlbuilder)
 - [SqlQuery type](docs/api.md#type-sqlquery)
 
+# Using with `pg`
+
+`tiny-pg-builder` is designed to work seamlessly with [`pg`](https://github.com/brianc/node-postgres), the most popular PostgreSQL client for Node.js.
+
+Simply pass the generated `{ text, values }` object directly to `pg.query()`:
+
+```ts
+import { sql } from 'tiny-pg-builder';
+import { Client } from 'pg';
+
+const client = new Client();
+await client.connect();
+
+const query = sql`SELECT * FROM users WHERE id = ${42}`;
+const result = await client.query(query);
+
+await client.end();
+
+console.log(result.rows);
+// → [{ id: 42, name: 'Alice', ... }]
+```
+
 ## Philosophy
 
 Many SQL libraries either go too far or not far enough.

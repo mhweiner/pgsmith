@@ -1,6 +1,13 @@
 import {SqlQuery} from '.';
 
-export function buildWhere<T extends Record<string, any>>(where: T): SqlQuery {
+export type BuildWhereOptions = {
+    omitWhere?: boolean
+};
+
+export function buildWhere<T extends Record<string, any>>(
+    where: T,
+    options: BuildWhereOptions = {}
+): SqlQuery {
 
     const keys = Object.keys(where);
 
@@ -36,7 +43,7 @@ export function buildWhere<T extends Record<string, any>>(where: T): SqlQuery {
     }
 
     return {
-        text: `WHERE ${clauses.join(' AND ')}`,
+        text: `${options.omitWhere ? '' : 'WHERE '}${clauses.join(' AND ')}`,
         values,
     };
 
