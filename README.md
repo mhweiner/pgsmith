@@ -58,6 +58,7 @@ _Write SQL the way you want — clearly and safely._
 
 - [Installation](#installation)
 - [Examples](#examples)
+- [Using with `pg`](#using-with-pg)
 - [API Reference](docs/api.md)
 - [Philosophy](#philosophy)
 - [Contributing](#contributing)
@@ -198,19 +199,6 @@ console.log(result.rows);
 
 ---
 
-## Philosophy
-
-Most SQL libraries either go too far or not far enough.
-
-- Some are **too low-level**, forcing you to manually manage strings and `$1` bindings.
-- Others are **too high-level**, hiding SQL behind complex DSLs or ORMs.
-
-`tiny-pg-builder` doesn’t try to replace SQL. It gives you a tiny, composable toolset that lets you work *with* SQL — clearly, safely, and without repetition or risk.
-
-> Write SQL the way you want — clearly and safely.
-
----
-
 ## API Reference
 
 - [`sqlBuilder`](docs/api.md#sqlbuilder)
@@ -224,6 +212,19 @@ Most SQL libraries either go too far or not far enough.
 
 ---
 
+## Philosophy
+
+Most SQL libraries either go too far or not far enough.
+
+- Some are **too low-level**, forcing you to manually manage strings and `$1` bindings.
+- Others are **too high-level**, hiding SQL behind complex DSLs or ORMs.
+
+`tiny-pg-builder` doesn’t try to replace SQL. It gives you a tiny, composable toolset that lets you work *with* SQL — clearly, safely, and without repetition or risk.
+
+> Write SQL the way you want — clearly and safely.
+
+---
+
 ## Contributing
 
 - ⭐ Star this repo if you like it!
@@ -232,8 +233,10 @@ Most SQL libraries either go too far or not far enough.
 
 ---
 
-## Related Projects
+# Related Projects
 
-- [**hoare**](https://github.com/mhweiner/hoare) – A minimalist test runner for TypeScript and JavaScript.
-- [**autorel**](https://github.com/mhweiner/autorel) – Automated semantic release from conventional commits.
-- [**brek**](https://github.com/mhweiner/brek) – A dynamic config loader with structured types and secret support.
+- [autorel](https://github.com/mhweiner/autorel): Automate semantic releases based on conventional commits. Similar to semantic-release but much simpler.
+- [hoare](https://github.com/mhweiner/hoare): An easy-to-use, fast, and defensive JS/TS test runner designed to help you to write simple, readable, and maintainable tests.
+- [jsout](https://github.com/mhweiner/jsout): A Syslog-compatible, small, and simple logger for Typescript/Javascript projects.
+- [cjs-mock](https://github.com/mhweiner/cjs-mock): NodeJS module mocking for CJS (CommonJS) modules for unit testing purposes.
+- [brek](https://github.com/mhweiner/brek): powerful yet simple configuration library for Node.js. It’s structured, typed, and designed for dynamic configuration loading, making it perfect for securely managing secrets (e.g., AWS Secrets Manager).
