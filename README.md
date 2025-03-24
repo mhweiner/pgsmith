@@ -8,22 +8,20 @@
 **tiny-pg-builder** is a utility for safely building parameterized SQL queries for use with [`pg`](https://github.com/brianc/node-postgres).
 
 ```ts
-// builder API
-const builder = sqlBuilder('SELECT * FROM users WHERE 1=1');
-status && builder.add('AND status = ?', ['active']);
-role && builder.add('AND role IN (??)', [['admin', 'editor']]);
-pg.query(builder.build());
-
 // tagged template
-const ids = [1, 2, 3];
-const query = sql`SELECT * FROM logs WHERE id IN (${ids}) AND level <= ${5}`;
-pg.query(query);
+sql`SELECT * FROM logs WHERE id IN (${[1, 2]}) AND level <= ${5}`;
+// { text: 'SELECT * FROM logs WHERE id IN ($1, $2) AND level <= $4', values: [1, 2, 5] }
+// Pass this right into pg.query()
+
+// Conditional query building
+const builder = sqlBuilder(sql`SELECT * FROM users WHERE 1=1`);
+status && builder.add(sql`AND status = ${'active'}`);
+role && builder.add(sql`AND role IN (${['admin', 'editor']})`);
+pg.query(builder.build());
 
 // object-based helpers
 const query = buildInsert('users', { name: 'Alice' });
 pg.query(query);
-
-// and more...
 ```
 
 It’s designed to help you write dynamic SQL without string concatenation or the complexity of an ORM.
@@ -32,8 +30,7 @@ _Write SQL the way you want — clearly and safely._
 
 **🔐 Safe and Convenient**
 - Automatically numbers placeholders (`$1`, `$2`, …) to prevent SQL injection.
-- Handles arrays via `??` for `IN (...)` clauses.
-- Take advantage of parameterized queries for better performance.
+- Easily Take advantage of parameterized queries and prepared statements for better performance.
 
 **🧰 Flexible Builder API**
 - Dynamically construct queries with conditionals or loops.

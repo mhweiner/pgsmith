@@ -1,37 +1,54 @@
 import {test} from 'hoare';
 import {sqlBuilder} from './sqlBuilder';
+import {sql} from './sql';
 
-test('sqlBuilder handles ? and ?? placeholders correctly', (assert) => {
+test('sqlBuilder builds a basic composed query', (assert) => {
 
-    const builder = sqlBuilder('SELECT * FROM logs WHERE teamId = ?', ['teamId']);
+    const builder = sqlBuilder(sql`SELECT * FROM users WHERE 1=1`);
 
-    builder.add('AND level <= ?', [3]);
-    builder.add('AND compId IN (??)', [[1, 2, 3]]);
+    builder.add(sql`AND active = ${true}`);
+    builder.add(sql`AND role IN (${['admin', 'editor']})`);
+
     const result = builder.build();
 
-    assert.equal(result.text, 'SELECT * FROM logs WHERE teamId = $1\nAND level <= $2\nAND compId IN ($3, $4, $5)');
-    assert.equal(result.values, ['teamId', 3, 1, 2, 3]);
+    assert.equal(
+        result.text,
+        'SELECT * FROM users WHERE 1=1\nAND active = $1\nAND role IN ($2, $3)'
+    );
 
-});
-
-test('throws if parameter count mismatches placeholders', (assert) => {
-
-    const builder = sqlBuilder('SELECT * FROM logs');
-
-    assert.throws(
-        () => builder.add('WHERE id = ? AND name = ?', [1]), // Missing parameter for name
-        /mismatch/i
+    assert.equal(
+        result.values,
+        [true, 'admin', 'editor']
     );
 
 });
 
-test('throws if ?? is used with empty array', (assert) => {
+test('sqlBuilder with no adds returns original query', (assert) => {
 
-    const builder = sqlBuilder('SELECT * FROM logs');
+    const initial = sql`SELECT * FROM logs WHERE level <= ${3}`;
+    const builder = sqlBuilder(initial);
+    const result = builder.build();
 
-    assert.throws(
-        () => builder.add('WHERE id IN (??)', [[]]), // Empty array for ??
-        /Cannot use empty array with "??"/i
+    assert.equal(result.text, 'SELECT * FROM logs WHERE level <= $1');
+    assert.equal(result.values, [3]);
+
+});
+
+test('sqlBuilder preserves order and parameter numbering', (assert) => {
+
+    const builder = sqlBuilder(sql`SELECT * FROM logs WHERE 1=1`);
+
+    builder.add(sql`AND comp_id IN (${[1, 2]})`);
+    builder.add(sql`AND level <= ${5}`);
+    builder.add(sql`AND message ILIKE ${'%error%'}`);
+
+    const result = builder.build();
+
+    assert.equal(
+        result.text,
+        'SELECT * FROM logs WHERE 1=1\nAND comp_id IN ($1, $2)\nAND level <= $3\nAND message ILIKE $4'
     );
+
+    assert.equal(result.values, [1, 2, 5, '%error%']);
 
 });

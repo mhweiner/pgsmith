@@ -1,86 +1,27 @@
 import type {SqlQuery} from '.';
 
-export function sqlBuilder(clause: string, params: any[] = []): {
-    add: (clause: string, params?: any[]) => void
+export function sqlBuilder(initial: SqlQuery): {
+    add: (fragment: SqlQuery) => void
     build: () => SqlQuery
 } {
 
-    const {clause: renderedClause, params: newParams} = transformClause(clause, params, 0);
+    let text = initial.text.trim();
+    const values = [...initial.values];
 
-    const sqlParts: string[] = [renderedClause];
-    const allParams: any[] = newParams;
-    let isBuilt = false;
+    const add = (fragment: SqlQuery): void => {
 
-    const add = (clause: string, params: any[] = []): void => {
+        const offset = values.length;
 
-        if (isBuilt) throw new Error('Cannot add to SQL after build() has been called');
-        const {clause: renderedClause, params: newParams} = transformClause(clause, params, allParams.length);
+        // Adjust placeholder numbers in fragment.text
+        const adjustedText = fragment.text.replace(/\$(\d+)/g, (_, n) => `$${Number(n) + offset}`);
 
-        sqlParts.push(renderedClause);
-        allParams.push(...newParams);
-
-    };
-
-    const build = (): SqlQuery => {
-
-        isBuilt = true;
-        return {
-            text: sqlParts.join('\n'),
-            values: allParams,
-        };
+        text += `\n${adjustedText}`;
+        values.push(...fragment.values);
 
     };
+
+    const build = (): SqlQuery => ({text, values});
 
     return {add, build};
-
-}
-
-function transformClause(
-    clause: string,
-    inputParams: any[],
-    startIndex: number
-): { clause: string, params: any[] } {
-
-    let paramIndex = 0;
-    let paramCounter = startIndex;
-    const outputParams: any[] = [];
-
-    const transformed = clause.replace(/\?\??/g, (match) => {
-
-        const param = inputParams[paramIndex++];
-
-        if (match === '??') {
-
-            if (!Array.isArray(param)) {
-
-                throw new Error(`Expected array for "??" placeholder in clause "${clause}"`);
-
-            }
-
-            if (param.length === 0) {
-
-                throw new Error(`Cannot use empty array with "??" placeholder in clause "${clause}"`);
-
-            }
-
-            const placeholders = param.map(() => `$${++paramCounter}`);
-
-            outputParams.push(...param);
-            return placeholders.join(', ');
-
-        }
-
-        outputParams.push(param);
-        return `$${++paramCounter}`;
-
-    });
-
-    if (paramIndex !== inputParams.length) {
-
-        throw new Error(`Mismatch between placeholders and parameters for clause "${clause}"`);
-
-    }
-
-    return {clause: transformed.trim(), params: outputParams};
 
 }
