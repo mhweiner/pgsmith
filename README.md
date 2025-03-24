@@ -8,11 +8,22 @@
 **tiny-pg-builder** is a utility for safely building parameterized SQL queries for use with [`pg`](https://github.com/brianc/node-postgres).
 
 ```ts
-// we also support tagged templates, insert from objects, and more!
+// builder API
 const builder = sqlBuilder('SELECT * FROM users WHERE 1=1');
-builder.add('AND status = ?', ['active']);
-builder.add('AND role IN (??)', [['admin', 'editor']]);
+status && builder.add('AND status = ?', ['active']);
+role && builder.add('AND role IN (??)', [['admin', 'editor']]);
 pg.query(builder.build());
+
+// tagged template
+const ids = [1, 2, 3];
+const query = sql`SELECT * FROM logs WHERE id IN (${ids}) AND level <= ${5}`;
+pg.query(query);
+
+// object-based helpers
+const query = buildInsert('users', { name: 'Alice' });
+pg.query(query);
+
+// and more...
 ```
 
 It’s designed to help you write dynamic SQL without string concatenation or the complexity of an ORM.
