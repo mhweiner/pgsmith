@@ -37,6 +37,7 @@ _Write SQL the way you want — clearly and safely._
 **🧰 Flexible Builder API**  
 - Dynamically build queries with conditionals or loops.  
 - Easily compose from reusable parts.
+- Use `raw()` to safely inject raw SQL when necessary, e.g., for sorting or table names.
 
 **🛠️ Object Helpers**  
 - Generate `INSERT`, `UPDATE`, and `WHERE` clauses [from objects](docs/api.md).
@@ -125,7 +126,7 @@ const query = builder.build();
 // [42, 'active', 'admin', 'editor']
 ```
 
-See [this guide](docs/dynamicSearchQueryExample.md) for building dynamic search queries.
+See a more real-world example of dynamic query building [here](docs/dynamicSearchQueryExample.md).
 
 ---
 
@@ -196,19 +197,6 @@ await client.end();
 console.log(result.rows);
 // → [{ id: 42, name: 'Alice', ... }]
 ```
-
----
-
-## API Reference
-
-- [`sqlBuilder`](docs/api.md#sqlbuilder)
-- [`sql` tagged templates](docs/api.md#sql)
-- [`buildInsert`](docs/api.md#buildinsert)
-- [`buildInsertMany`](docs/api.md#buildinsertmany)
-- [`buildUpdate`](docs/api.md#buildupdate)
-- [`buildWhere`](docs/api.md#buildwhere)
-- [`SqlBuilder` type](docs/api.md#type-sqlbuilder)
-- [`SqlQuery` type](docs/api.md#type-sqlquery)
 
 ---
 
