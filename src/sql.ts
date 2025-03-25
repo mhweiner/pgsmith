@@ -1,5 +1,23 @@
 import type {SqlQuery} from '.';
 
+type RawSql = {
+    __raw: true
+    text: string
+};
+
+export function raw(text: string): RawSql {
+
+    return {__raw: true, text};
+
+}
+
+function isRaw(value: any): value is RawSql {
+
+    // eslint-disable-next-line no-underscore-dangle
+    return value && value.__raw === true && typeof value.text === 'string';
+
+}
+
 export function sql(strings: TemplateStringsArray, ...values: any[]): SqlQuery {
 
     let text = '';
@@ -14,7 +32,11 @@ export function sql(strings: TemplateStringsArray, ...values: any[]): SqlQuery {
 
             const value = values[i];
 
-            if (Array.isArray(value)) {
+            if (isRaw(value)) {
+
+                text += value.text;
+
+            } else if (Array.isArray(value)) {
 
                 if (value.length === 0) {
 

@@ -1,7 +1,7 @@
 # Dynamic Search Query Example
 
 ```ts
-import {sqlBuilder, sql} from 'tiny-pg-builder';
+import {sqlBuilder, sql, raw} from 'tiny-pg-builder';
 import {Client} from 'pg';
 
 const pg = new Client(); // or use pg.Pool if that's what you're using
@@ -15,6 +15,7 @@ type UserFilters = {
     from: number;
     to: number;
   };
+  sort?: 'ASC' | 'DESC';
 };
 
 function buildUserQuery(filters: UserFilters) {
@@ -33,7 +34,16 @@ function buildUserQuery(filters: UserFilters) {
   }
 
   if (filters.ageBetween) {
-    builder.add(sql`AND age BETWEEN ${filters.ageBetween.from} AND ${filters.ageBetween.to}`);
+    builder.add(
+      sql`AND age BETWEEN ${filters.ageBetween.from} AND ${filters.ageBetween.to}`
+    );
+  }
+
+  if (filters.sort) {
+    // Sort order cannot be parameterized directly, so we use raw() to safely inject it
+    // you must validate the sort order to prevent SQL injection!
+    const safeSort = filters.sort.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+    builder.add(sql`ORDER BY age ${raw(safeSort)}`);
   }
 
   return builder.build();
@@ -43,6 +53,7 @@ const query = buildUserQuery({
   name: 'alice',
   active: true,
   roles: ['admin', 'editor'],
+  sort: 'DESC',
 });
 
 // query.text:
@@ -50,6 +61,8 @@ const query = buildUserQuery({
 // AND name ILIKE $1
 // AND active = $2
 // AND role IN ($3, $4)
+// ORDER BY age DESC
+
 // query.values:
 // ['%alice%', true, 'admin', 'editor']
 

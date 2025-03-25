@@ -1,5 +1,5 @@
 import {test} from 'hoare';
-import {sql} from './sql';
+import {raw, sql} from './sql';
 
 test('sql tag interpolates values and arrays into numbered parameters', (assert) => {
 
@@ -17,5 +17,32 @@ test('throws on empty array', (assert) => {
         () => sql`SELECT * FROM logs WHERE id IN (${[]})`, // Empty array
         /Cannot interpolate empty array into SQL/
     );
+
+});
+
+test('sql.raw inserts trusted SQL as-is without binding', (assert) => {
+
+    const sortDir = raw('DESC');
+    const {text, values} = sql`SELECT * FROM logs ORDER BY time ${sortDir}`;
+
+    assert.equal(text, 'SELECT * FROM logs ORDER BY time DESC');
+    assert.equal(values, []);
+
+});
+
+test('sql.raw and parameters mixed correctly', (assert) => {
+
+    const query = sql`SELECT * FROM ${raw('"logs"')} WHERE level >= ${3} AND status = ${'active'}`;
+
+    assert.equal(query.text, 'SELECT * FROM "logs" WHERE level >= $1 AND status = $2');
+    assert.equal(query.values, [3, 'active']);
+
+});
+
+test('sql() trims extra whitespace from final text', (assert) => {
+
+    const query = sql`  SELECT * FROM logs  WHERE id = ${1}  `;
+
+    assert.equal(query.text, 'SELECT * FROM logs  WHERE id = $1');
 
 });

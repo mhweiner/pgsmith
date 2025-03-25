@@ -161,7 +161,7 @@ import { sql, sqlBuilder, buildWhere } from 'tiny-pg-builder';
 
 const query = sqlBuilder(sql`SELECT * FROM users`)
   .add(buildWhere({ id: 1, status: 'active', role: ['admin', 'editor'] }))
-  .add(sql`ORDER BY created_at DESC`)
+  .add(sql`ORDER BY created_at ${raw('DESC')}`)
   .build();
 
 // query.text:

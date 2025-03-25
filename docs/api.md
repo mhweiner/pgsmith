@@ -1,6 +1,7 @@
 # API Reference
 
 - [sql tagged templates](#sql)
+- [raw](#raw)
 - [sqlBuilder](#sqlbuilder)
 - [buildInsert](#buildinsert)
 - [buildInsertMany](#buildinsertmany)
@@ -17,16 +18,62 @@
 sql(strings: TemplateStringsArray, ...values: any[]): SqlQuery
 ```
 
-Tagged template for inline SQL with automatic `$1` bindings.
+Tagged template for inline SQL with automatic `$1`, `$2`, … bindings.
+
+- Arrays are expanded into `IN (...)` placeholders.
+- Use `raw()` to safely interpolate unparameterized values like sort direction or column names.
+
+#### Example – With values and arrays
 
 ```ts
 const ids = [1, 2, 3];
-const query = sql`SELECT * FROM logs WHERE id IN (${ids}) AND level <= ${5}`;
+const query = sql`
+  SELECT * FROM logs
+  WHERE id IN (${ids})
+  AND level <= ${5}
+`;
 
 // query.text:
 // SELECT * FROM logs WHERE id IN ($1, $2, $3) AND level <= $4
 // query.values:
 // [1, 2, 3, 5]
+```
+
+#### Example – With raw SQL
+
+```ts
+const direction = 'DESC';
+const query = sql`
+  SELECT * FROM users
+  ORDER BY created_at ${raw(direction)}
+`;
+
+// query.text:
+// SELECT * FROM users ORDER BY created_at DESC
+// query.values:
+// []
+```
+
+---
+
+### `raw`
+
+```ts
+raw(value: string): { text: string, values: [] }
+```
+
+Injects a raw SQL string without parameterization. Useful when you need to safely insert known SQL fragments like `ASC`, `DESC`, or `"tableName"`.
+
+⚠️ You **must validate or sanitize** the value yourself to avoid SQL injection.
+
+```ts
+const query = sql`
+  SELECT * FROM users
+  ORDER BY created_at ${raw('DESC')}
+`;
+
+// query.text: 'SELECT * FROM users ORDER BY created_at DESC'
+// query.values: []
 ```
 
 ---
