@@ -3,9 +3,9 @@ export type SqlQuery = {
     values: any[]
 };
 
-export {sql} from './sql';
-export {sqlBuilder} from './sqlBuilder';
-export {buildInsert} from './buildInsert';
-export {buildInsertMany} from './buildInsertMany';
-export {buildUpdate} from './buildUpdate';
-export {buildWhere} from './buildWhere';
+export * from './sql';
+export * from './sqlBuilder';
+export * from './buildInsert';
+export * from './buildInsertMany';
+export * from './buildUpdate';
+export * from './buildWhere';
