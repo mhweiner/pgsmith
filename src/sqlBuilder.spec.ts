@@ -52,3 +52,39 @@ test('sqlBuilder preserves order and parameter numbering', (assert) => {
     assert.equal(result.values, [1, 2, 5, '%error%']);
 
 });
+
+test('sqlBuilder generates stable query text for identical structure (for prepared statements)', (assert) => {
+
+    const inputA = {
+        teamId: 'teamA',
+        message: 'hello',
+        level: 2,
+        compId: 'comp1',
+        count: 3,
+    };
+    const inputB = {
+        teamId: 'teamB',
+        message: 'world',
+        level: 4,
+        compId: 'comp2',
+        count: 7,
+    };
+
+    const builderA = sqlBuilder(sql`SELECT * FROM logs WHERE 1=1`);
+
+    builderA.add(sql`AND team_id = ${inputA.teamId}`);
+    builderA.add(sql`AND message ILIKE ${inputA.message}`);
+    builderA.add(sql`AND level <= ${inputA.level}`);
+
+    const builderB = sqlBuilder(sql`SELECT * FROM logs WHERE 1=1`);
+
+    builderB.add(sql`AND team_id = ${inputB.teamId}`);
+    builderB.add(sql`AND message ILIKE ${inputB.message}`);
+    builderB.add(sql`AND level <= ${inputB.level}`);
+
+    const resultA = builderA.build();
+    const resultB = builderB.build();
+
+    assert.equal(resultA.text, resultB.text);
+
+});
