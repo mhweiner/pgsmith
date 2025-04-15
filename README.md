@@ -174,29 +174,6 @@ const query = sqlBuilder(sql`SELECT * FROM users`)
 // [1, 'active', 'admin', 'editor']
 ```
 
-### Unnest Arrays Example
-
-```ts
-const unnestLogs = buildUnnest<Log>({
-  id: ['uuid'],
-  time: ['timestamptz', log => new Date(log.timeInMs)],
-  level: ['int'],
-  message: ['text'],
-  data: ['jsonb', log => log.data ? JSON.stringify(log.data) : null],
-  compId: ['int'],
-  teamId: ['int']
-});
-
-const {cols, unnest, values} = unnestLogs(logs);
-const text = `
-  INSERT INTO logs ${cols}
-  SELECT * FROM ${unnest}
-  ON CONFLICT (id, time) DO NOTHING
-`;
-
-await pg.query({text, values});
-```
-
 ## Using with `pg`
 
 `tiny-pg-builder` works seamlessly with [`pg`](https://github.com/brianc/node-postgres), the most popular PostgreSQL client for Node.js.
