@@ -9,3 +9,4 @@ export * from './buildInsert';
 export * from './buildInsertMany';
 export * from './buildUpdate';
 export * from './buildWhere';
+export * from './buildUnnest';
