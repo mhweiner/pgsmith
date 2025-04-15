@@ -5,19 +5,19 @@ test('buildUnnest returns correct cols, unnest, and values', async (assert) => {
 
   type Log = {
       id: string
-      timeInMs: number
+      time: number
       level: number
   };
 
   const logs: Log[] = [
-      {id: 'a', timeInMs: 1700000000000, level: 1},
-      {id: 'b', timeInMs: 1700000005000, level: 2},
+      {id: 'a', time: 1700000000000, level: 1},
+      {id: 'b', time: 1700000005000, level: 2},
   ];
 
   const build = buildUnnest<Log>({
-      id: ['uuid'],
-      time: ['timestamptz', (log): Date => new Date(log.timeInMs)],
-      level: ['int'],
+      id: {type: 'uuid'},
+      time: {type: 'timestamptz', transform: (log): Date => new Date(log.time)},
+      level: {type: 'int'},
   });
 
   const {cols, unnest, values} = build(logs);
@@ -39,11 +39,11 @@ test('buildUnnest returns correct cols, unnest, and values', async (assert) => {
 
 test('buildUnnest works with default accessors', async (assert) => {
 
-  type Row = { a: number, b: string };
+  type Row = {a: number, b: string};
 
   const unnestRows = buildUnnest<Row>({
-      a: ['int'],
-      b: ['text'],
+      a: {type: 'int'},
+      b: {type: 'text'},
   });
 
   const {cols, unnest, values} = unnestRows([
@@ -67,8 +67,8 @@ test('buildUnnest handles nulls and missing values safely', async (assert) => {
   type Row = { name: string, note?: string };
 
   const unnestRows = buildUnnest<Row>({
-      name: ['text'],
-      note: ['text'],
+      name: {type: 'text'},
+      note: {type: 'text'},
   });
 
   const {cols, unnest, values} = unnestRows([

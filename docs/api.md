@@ -210,53 +210,73 @@ Throws if the object is empty.
 
 ### `buildUnnest`
 
+A reusable helper to generate SQL-safe `UNNEST(...)` clauses from a list of typed rows — complete with type-safe schema definition, column-aligned parameter arrays, and casted SQL fragments for use with PostgreSQL bulk inserts.
+
+This design allows you to declaratively define column types and logic in one place — with consistent output for UNNEST-based inserts. It generates the necessary SQL fragments and parameter arrays for you, so you can focus on your data and logic.
+
 ```ts
-buildUnnest<T>(
-  spec: Record<string, [pgType: string, transform?: (row: T) => any]>
-): (rows: T[]) => {
-  cols: string;
-  unnest: string;
-  values: any[][];
+
+import {buildUnnest} from 'tiny-pg-builder';
+
+// 1. Define your row type and prepare your data
+
+type User = {
+  id: string;
+  dateRegistered: number;
+  teamId: number;
+  name?: string;
+};
+
+const users = [
+  {id: '1', dateRegistered: 1744741891219, teamId: 1, name: "Craig Johnson"},
+  {id: '2', dateRegistered: 1744741890430, teamId: 2},
+];
+
+// 2. Create an unnest function using `buildUnnest`
+
+const unnestUsers = buildUnnest<User>({
+  id: {type: 'uuid'},
+  dateRegistered: {
+    type: 'timestamptz',
+    transform: (user) => new Date(user.dateRegistered), // optional custom transform
+  },
+  teamId: {type: 'int4'},
+});
+
+// 3. Build the query
+
+const {cols, unnest, values} = unnestUsers(users);
+const text = `
+    INSERT INTO users ${cols}
+    SELECT * FROM ${unnest}
+    ON CONFLICT (id) DO NOTHING
+    `;
+
+await db.query({text, values});
+```
+
+#### 🧠 Schema Format
+
+```ts
+{
+  [columnName]: {
+    type: PgType;
+    transform?: (row: T) => any;
+  }
 }
 ```
 
-Defines a reusable schema for building `UNNEST(...)` SQL inserts from an array of objects.
+- `type` is required and must be a PostgreSQL type. We have built-in support for common Postgres types, but if your type isn't supported, you can use `'blah' as PgType` or use `@ts-ignore` to bypass type checking.
+- `transform` is optional — if omitted, the field will be accessed via `row[key]`
+- All keys must exist on the row type `T`
 
-- Returns a function that accepts a `T[]` and returns:
-  - `cols`: a SQL-safe column list for use in `INSERT INTO table ${raw(cols)}`
-  - `unnest`: a SQL fragment like `UNNEST($1::uuid[], ...) AS t("id", ...)` for use in `SELECT * FROM ${raw(unnest)}`
-  - `values`: a parameter array to pass to your query function
+#### 🛑 Gotchas
 
-```ts
-const unnestLogs = buildUnnest<Log>({
-  id: ['uuid'],
-  time: ['timestamptz', log => new Date(log.timeInMs)],
-  level: ['int'],
-  message: ['text'],
-  data: ['jsonb', log => log.data ? JSON.stringify(log.data) : null],
-  compId: ['int'],
-  teamId: ['int']
-});
-
-const {cols, unnest, values} = unnestLogs(logs);
-const text = `
-  INSERT INTO logs ${cols}
-  SELECT * FROM ${unnest}
-  ON CONFLICT (id, time) DO NOTHING
-`;
-
-await pg.query({text, values});
-```
-
-> **Note:** The column order and SQL types are derived from the object keys in the schema.  
-> Each transform function receives the full object and should return the value for that column.  
-> If no transform is provided, the column is accessed directly via `row[key]`.  
-> This helper is designed specifically for use with `UNNEST(...)` in bulk inserts.
-
-> **Note:** You must not use `sql` or `sqlBuilder` with `buildUnnest()`, as `cols` and `unnest` are not
-not to be parameterized with `$1`, `$2`, etc.
-
-Throws if `rows` contains undefined values for any schema-defined column.
+- You should **not include `[]`** in the `type` — this is handled automatically.
+  - ✅ Use `'uuid'` → 🔁 generates `$1::uuid[]`
+  - ❌ Don't use `'uuid[]'`
+- `cols` and `unnest` are **raw SQL fragments** — use them with `raw(...)` or just interpolate them directly into your query.
+- The optional `transform` function is called for each row in the array. It should return a value that matches the type you specified in the schema. This is not type-checked (cast as `any`), so you must ensure that the return type matches the expected PostgreSQL type.
 
 ## 🧩 Types
 

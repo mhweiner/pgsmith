@@ -7,50 +7,42 @@
 
 **tiny-pg-builder** is a utility for safely building parameterized SQL queries for use with [`pg`](https://github.com/brianc/node-postgres).
 
-```ts
-// Tagged template
+This is **NOT** an ORM or DSL! It’s a simple, composable SQL builder that lets you write SQL the way you want — clearly and safely.
 
-const query = sql`SELECT * FROM logs WHERE id IN (${[8, 9]}) AND level <= ${5}`;
+```ts
+/*** Tagged template ***/
+
+const emails = ['alice@example.com', 'bob@example.com'];
+const query = sql`SELECT * FROM users WHERE email IN (${emails}) AND is_active = ${true}`;
 
 // query.text:
-// SELECT * FROM logs WHERE id IN ($1, $2) AND level <= $3
-
+// SELECT * FROM users WHERE email IN ($1, $2) AND is_active <= $3
 // query.values:
-// [8, 9, 5]
+// ['alice@example.com', 'bob@example.com', true]
 
-// Conditional query building
+/*** Conditional query building ***/
+
+const data = {
+  id: 42,
+  role: ['admin', 'editor'],
+  order: 'created_at DESC',
+}
 
 const builder = sqlBuilder(sql`SELECT * FROM users WHERE 1=1`);
 
-status && builder.add(sql`AND status = ${'active'}`);
-role && builder.add(sql`AND role IN (${['admin', 'editor']})`);
+data.id && builder.add(sql`AND id = ${data.id}`);
+data.role && builder.add(sql`AND role IN (${data.role})`);
+data.order && builder.add(sql`ORDER BY ${raw('data.order')}`);
 
 const query = builder.build();
 
-// query.text:
-// SELECT * FROM users WHERE 1=1
-// AND status = $1
-// AND role IN ($2, $3)
-
-// query.values:
-// [ 'active', 'admin', 'editor' ]
-
-// Object-based helpers
-
-const query = buildInsert('users', { id: 1, name: 'Alice' });
+await pg.query(query);
 
 // query.text:
-// INSERT INTO users (id, name) VALUES ($1, $2)
-
+// SELECT * FROM users WHERE 1=1 AND id = $1 AND role IN ($3, $4) ORDER BY created_at DESC
 // query.values:
-// [1, 'Alice']
+// [42, 'admin', 'editor']
 ```
-
-It’s designed to help you write dynamic SQL without string concatenation or the complexity of an ORM.
-
-_Write SQL the way you want — clearly and safely._
-
----
 
 **🔐 Safe and Convenient**  
 - Automatically numbers placeholders (`$1`, `$2`, …) to prevent SQL injection.  
@@ -59,13 +51,12 @@ _Write SQL the way you want — clearly and safely._
 **🧰 Flexible Builder API**  
 - Dynamically build queries with conditionals or loops.  
 - Easily compose from reusable parts.
-- Use `raw()` to safely inject raw SQL when necessary, e.g., for sorting or table names.
 
 **🛠️ Object Helpers**  
 - Generate `INSERT`, `UPDATE`, and `WHERE` clauses [from objects](docs/api.md).
 
 **🎯 Works with `pg`**  
-- Returns `{ text, values }` — drop-in compatible with `pg.query()`.
+- Returns `{text, values}` — drop-in compatible with `pg.query()`.
 
 **💬 Template Literal Support**  
 - Use [tagged templates](#tagged-template-example) for inline queries.  
@@ -97,7 +88,7 @@ npm i tiny-pg-builder
 ### Tagged Template Example
 
 ```ts
-import { sql } from 'tiny-pg-builder';
+import {sql} from 'tiny-pg-builder';
 
 const ids = [33, 22, 11];
 
@@ -105,37 +96,41 @@ const query = sql`
   SELECT * FROM logs
   WHERE id IN (${ids})
   AND level <= ${5}
+  ORDER BY created_at DESC
 `;
 
 // pg.query(query)
 
 // query.text:
-// SELECT * FROM logs WHERE id IN ($1, $2, $3) AND level <= $4
+// SELECT * FROM logs WHERE id IN ($1, $2, $3) AND level <= $4 ORDER BY created_at DESC
 // query.values:
 // [33, 22, 11, 5]
 ```
 
-### Builder API Quick Example
+### Builder API Example
 
 ```ts
-import { sql, sqlBuilder } from 'tiny-pg-builder';
+import {sql, sqlBuilder, raw} from 'tiny-pg-builder';
+
+// example data, could be anything
+const data = {
+  id: 42,
+  status: 'active',
+  role: ['admin', 'editor'],
+  order: 'created_at DESC',
+}
 
 const builder = sqlBuilder(sql`SELECT * FROM users WHERE 1=1`);
 
-builder.add(sql`AND id = ${42}`);
-builder.add(sql`AND status = ${'active'}`);
-builder.add(sql`AND role IN (${['admin', 'editor']})`);
+data.id && builder.add(sql`AND id = ${data.id}`);
+data.status && builder.add(sql`AND status = ${data.status}`);
+data.role && builder.add(sql`AND role IN (${data.role})`);
+data.order && builder.add(sql`ORDER BY ${raw('data.order')}`);
 
 const query = builder.build();
 
-// pg.query(query)
-
 // query.text:
-// SELECT * FROM users WHERE 1=1
-// AND id = $1
-// AND status = $2
-// AND role IN ($3, $4)
-
+// SELECT * FROM users WHERE 1=1 AND id = $1 AND status = $2 AND role IN ($3, $4) ORDER BY created_at DESC
 // query.values:
 // [42, 'active', 'admin', 'editor']
 ```
@@ -156,8 +151,6 @@ const user = {
 
 const query = buildInsert('users', user, { returning: true });
 
-// pg.query(query)
-
 // query.text:
 // INSERT INTO "users" ("firstName", "lastName", "email", "isActive")
 // VALUES ($1, $2, $3, $4) RETURNING *
@@ -165,21 +158,18 @@ const query = buildInsert('users', user, { returning: true });
 // ['Alice', 'Smith', 'alice@example.com', true]
 ```
 
-### 🧩 Complex Composition Example
+### 🧩 Composition Example
 
 ```ts
 import { sql, sqlBuilder, buildWhere } from 'tiny-pg-builder';
 
 const query = sqlBuilder(sql`SELECT * FROM users`)
-  .add(buildWhere({ id: 1, status: 'active', role: ['admin', 'editor'] }))
+  .add(buildWhere({id: 1, status: 'active', role: ['admin', 'editor']}))
   .add(sql`ORDER BY created_at ${raw('DESC')}`)
   .build();
 
 // query.text:
-// SELECT * FROM users
-// WHERE "id" = $1 AND "status" = $2 AND "role" IN ($3, $4)
-// ORDER BY created_at DESC
-
+// SELECT * FROM users WHERE "id" = $1 AND "status" = $2 AND "role" IN ($3, $4) ORDER BY created_at DESC
 // query.values:
 // [1, 'active', 'admin', 'editor']
 ```

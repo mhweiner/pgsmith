@@ -1,14 +1,12 @@
+import {PgType} from './pgTypes';
+
 /* eslint-disable max-lines-per-function */
-type PgType = string;
-
 type ColumnTransform<T> = (row: T) => any;
-
-type SchemaEntry<T> =
-  | [PgType]
-  | [PgType, ColumnTransform<T>];
-
-type SchemaSpec<T> = Record<string, SchemaEntry<T>>;
-
+type SchemaEntry<T> = {
+    type: PgType
+    transform?: ColumnTransform<T>
+};
+type SchemaSpec<T> = Record<keyof T, SchemaEntry<T>>;
 type UnnestResult = {
     cols: string // e.g. ("id", "time", "level")
     unnest: string // e.g. UNNEST($1::uuid[], ...) AS t("id", "time", ...)
@@ -33,9 +31,9 @@ export function buildUnnest<T>(spec: SchemaSpec<T>): (rows: T[]) => UnnestResult
 
     for (const key of keys) {
 
-        const [pgType, transform] = spec[key];
+        const {type, transform} = spec[key];
 
-        types[key] = pgType;
+        types[key] = type;
         transforms[key] = transform ?? ((row: T): any => (row as any)[key]);
 
     }
