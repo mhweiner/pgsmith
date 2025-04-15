@@ -9,19 +9,41 @@
 
 ```ts
 // Tagged template
-sql`SELECT * FROM logs WHERE id IN (${[8, 9]}) AND level <= ${5}`;
-// → { text: 'SELECT * FROM logs WHERE id IN ($1, $2) AND level <= $3', values: [8, 9, 5] }
+
+const query = sql`SELECT * FROM logs WHERE id IN (${[8, 9]}) AND level <= ${5}`;
+
+// query.text:
+// SELECT * FROM logs WHERE id IN ($1, $2) AND level <= $3
+
+// query.values:
+// [8, 9, 5]
 
 // Conditional query building
+
 const builder = sqlBuilder(sql`SELECT * FROM users WHERE 1=1`);
+
 status && builder.add(sql`AND status = ${'active'}`);
 role && builder.add(sql`AND role IN (${['admin', 'editor']})`);
+
 const query = builder.build();
-// → { text: 'SELECT * FROM users WHERE 1=1\nAND status = $1\nAND role IN ($2, $3)', values: ['active', 'admin', 'editor'] }
+
+// query.text:
+// SELECT * FROM users WHERE 1=1
+// AND status = $1
+// AND role IN ($2, $3)
+
+// query.values:
+// [ 'active', 'admin', 'editor' ]
 
 // Object-based helpers
-buildInsert('users', { id: 1, name: 'Alice' });
-// → { text: 'INSERT INTO users (id, name) VALUES ($1, $2)', values: [1, 'Alice'] }
+
+const query = buildInsert('users', { id: 1, name: 'Alice' });
+
+// query.text:
+// INSERT INTO users (id, name) VALUES ($1, $2)
+
+// query.values:
+// [1, 'Alice']
 ```
 
 It’s designed to help you write dynamic SQL without string concatenation or the complexity of an ORM.
@@ -53,8 +75,6 @@ _Write SQL the way you want — clearly and safely._
 - Fully typed, 100% test coverage  
 - No runtime dependencies or bloat
 
----
-
 ## Table of Contents
 
 - [Installation](#installation)
@@ -66,15 +86,11 @@ _Write SQL the way you want — clearly and safely._
 - [Related Projects](#related-projects)
 - [License](#license)
 
----
-
 ## Installation
 
 ```bash
 npm i tiny-pg-builder
 ```
-
----
 
 ## Examples
 
@@ -98,8 +114,6 @@ const query = sql`
 // query.values:
 // [33, 22, 11, 5]
 ```
-
----
 
 ### Builder API Quick Example
 
@@ -128,8 +142,6 @@ const query = builder.build();
 
 See a more real-world example of dynamic query building [here](docs/dynamicSearchQueryExample.md).
 
----
-
 ### 📝 Insert From Object Example
 
 ```ts
@@ -153,8 +165,6 @@ const query = buildInsert('users', user, { returning: true });
 // ['Alice', 'Smith', 'alice@example.com', true]
 ```
 
----
-
 ### 🧩 Complex Composition Example
 
 ```ts
@@ -174,7 +184,30 @@ const query = sqlBuilder(sql`SELECT * FROM users`)
 // [1, 'active', 'admin', 'editor']
 ```
 
----
+### Unnest Arrays Example
+
+```ts
+const unnestLogs = buildUnnest<Log>({
+  id: ['uuid'],
+  time: ['timestamptz', log => new Date(log.timeInMs)],
+  level: ['int'],
+  message: ['text'],
+  data: ['jsonb', log => log.data ? JSON.stringify(log.data) : null],
+  compId: ['int'],
+  teamId: ['int']
+});
+
+const { cols, unnest, values } = unnestLogs(logs);
+
+await db.query({
+  text: `
+    INSERT INTO logs ${cols}
+    SELECT * FROM ${unnest}
+    ON CONFLICT (id, time) DO NOTHING
+  `,
+  values
+});
+```
 
 ## Using with `pg`
 
@@ -198,8 +231,6 @@ console.log(result.rows);
 // → [{ id: 42, name: 'Alice', ... }]
 ```
 
----
-
 ## Philosophy
 
 Most SQL libraries either go too far or not far enough.
@@ -211,15 +242,11 @@ Most SQL libraries either go too far or not far enough.
 
 > Write SQL the way you want — clearly and safely.
 
----
-
 ## Contributing
 
 - ⭐ Star this repo if you like it!
 - 🐛 Open an [issue](https://github.com/mhweiner/tiny-pg-builder/issues) for bugs or suggestions.
 - 🤝 Submit a PR to `main` — all tests must pass.
-
----
 
 # Related Projects
 

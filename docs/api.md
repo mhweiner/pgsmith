@@ -7,6 +7,7 @@
 - [buildInsertMany](#buildinsertmany)
 - [buildUpdate](#buildupdate)
 - [buildWhere](#buildwhere)
+- [buildUnnest](#buildunnest)
 - [SqlBuilder type](#type-sqlbuilder)
 - [SqlQuery type](#type-sqlquery)
 
@@ -206,6 +207,58 @@ buildWhere({ id: 42 }, { omitWhere: true });
 > It is **not a DSL** — use `sql` or `sqlBuilder()` for anything more advanced (e.g. `>`, `<`, `IS NULL`, `BETWEEN`, etc.).
 
 Throws if the object is empty.
+
+### `buildUnnest`
+
+```ts
+buildUnnest<T>(
+  spec: Record<string, [pgType: string, transform?: (row: T) => any]>
+): (rows: T[]) => {
+  cols: string;
+  unnest: string;
+  values: any[][];
+}
+```
+
+Defines a reusable schema for building `UNNEST(...)` SQL inserts from an array of objects.
+
+- Returns a function that accepts a `T[]` and returns:
+  - `cols`: a SQL-safe column list for use in `INSERT INTO table ${raw(cols)}`
+  - `unnest`: a SQL fragment like `UNNEST($1::uuid[], ...) AS t("id", ...)` for use in `SELECT * FROM ${raw(unnest)}`
+  - `values`: a parameter array to pass to your query function
+
+```ts
+const unnestLogs = buildUnnest<Log>({
+  id: ['uuid'],
+  time: ['timestamptz', log => new Date(log.timeInMs)],
+  level: ['int'],
+  message: ['text'],
+  data: ['jsonb', log => log.data ? JSON.stringify(log.data) : null],
+  compId: ['int'],
+  teamId: ['int']
+});
+
+const { cols, unnest, values } = unnestLogs(logs);
+
+await db.query({
+  text: `
+    INSERT INTO logs ${cols}
+    SELECT * FROM ${unnest}
+    ON CONFLICT (id, time) DO NOTHING
+  `,
+  values
+});
+```
+
+> **Note:** The column order and SQL types are derived from the object keys in the schema.  
+> Each transform function receives the full object and should return the value for that column.  
+> If no transform is provided, the column is accessed directly via `row[key]`.  
+> This helper is designed specifically for use with `UNNEST(...)` in bulk inserts.
+
+> **Note:** You must not use `sql` or `sqlBuilder` with `buildUnnest()`, as `cols` and `unnest` are not
+not to be parameterized with `$1`, `$2`, etc.
+
+Throws if `rows` contains undefined values for any schema-defined column.
 
 ## 🧩 Types
 
