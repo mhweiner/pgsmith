@@ -238,16 +238,14 @@ const unnestLogs = buildUnnest<Log>({
   teamId: ['int']
 });
 
-const { cols, unnest, values } = unnestLogs(logs);
+const {cols, unnest, values} = unnestLogs(logs);
+const text = `
+  INSERT INTO logs ${cols}
+  SELECT * FROM ${unnest}
+  ON CONFLICT (id, time) DO NOTHING
+`;
 
-await db.query({
-  text: `
-    INSERT INTO logs ${cols}
-    SELECT * FROM ${unnest}
-    ON CONFLICT (id, time) DO NOTHING
-  `,
-  values
-});
+await pg.query({text, values});
 ```
 
 > **Note:** The column order and SQL types are derived from the object keys in the schema.  
