@@ -8,7 +8,7 @@ type SchemaEntry<T> = {
 };
 type SchemaSpec<T> = Record<keyof T, SchemaEntry<T>>;
 type UnnestResult = {
-    cols: string // e.g. ("id", "time", "level")
+    cols: string // e.g. "id", "time", "level"
     unnest: string // e.g. UNNEST($1::uuid[], ...) AS t("id", "time", ...)
     values: any[][] // column-aligned arrays
 };
@@ -59,14 +59,11 @@ export function buildUnnest<T>(spec: SchemaSpec<T>): (rows: T[]) => UnnestResult
         }
 
         const values: any[][] = keys.map((key) => cols[key]);
-
-        const colList = `(${keys.map((k) => `"${k}"`).join(', ')})`;
-
+        const colList = `${keys.map((k) => `"${k}"`).join(', ')}`;
         const unnestList = keys
             .map((key, i) => `$${i + 1}::${types[key]}[]`)
             .join(', ');
-
-        const unnest = `UNNEST(${unnestList}) AS t${colList}`;
+        const unnest = `UNNEST(${unnestList}) AS t(${colList})`;
 
         return {
             cols: colList,

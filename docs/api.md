@@ -240,17 +240,22 @@ const unnestUsers = buildUnnest<User>({
     type: 'timestamptz',
     transform: (user) => new Date(user.dateRegistered), // optional custom transform
   },
-  teamId: {type: 'int4'},
+  teamId: {type: 'int'},
 });
 
 // 3. Build the query
 
 const {cols, unnest, values} = unnestUsers(users);
 const text = `
-    INSERT INTO users ${cols}
+    INSERT INTO users (${cols})
     SELECT * FROM ${unnest}
     ON CONFLICT (id) DO NOTHING
     `;
+
+// This will generate the following SQL:
+// INSERT INTO users ("id", "dateRegistered", "teamId")
+// SELECT * FROM UNNEST($1::uuid[], $2::timestamptz[], $3::int4[])
+// ON CONFLICT (id) DO NOTHING
 
 await db.query({text, values});
 ```

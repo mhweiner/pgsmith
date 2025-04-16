@@ -25,7 +25,7 @@ test('buildUnnest returns correct cols, unnest, and values', async (assert) => {
   return assert.equal(
       JSON.stringify({cols, unnest, values}),
       JSON.stringify({
-          cols: '("id", "time", "level")',
+          cols: '"id", "time", "level"',
           unnest: 'UNNEST($1::uuid[], $2::timestamptz[], $3::int[]) AS t("id", "time", "level")',
           values: [
               ['a', 'b'],
@@ -54,7 +54,7 @@ test('buildUnnest works with default accessors', async (assert) => {
   return assert.equal(
       JSON.stringify({cols, unnest, values}),
       JSON.stringify({
-          cols: '("a", "b")',
+          cols: '"a", "b"',
           unnest: 'UNNEST($1::int[], $2::text[]) AS t("a", "b")',
           values: [[1, 2], ['one', 'two']],
       })
@@ -79,7 +79,7 @@ test('buildUnnest handles nulls and missing values safely', async (assert) => {
   return assert.equal(
       JSON.stringify({cols, unnest, values}),
       JSON.stringify({
-          cols: '("name", "note")',
+          cols: '"name", "note"',
           unnest: 'UNNEST($1::text[], $2::text[]) AS t("name", "note")',
           values: [['Alice', 'Bob'], [null, 'hi']],
       })
