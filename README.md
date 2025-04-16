@@ -70,7 +70,7 @@ await pg.query(query);
 - Fully typed, 100% test coverage  
 - No runtime dependencies or bloat
 
-# Table of Contents
+## Table of Contents
 
 - [Installation](#installation)
 - [Examples](#examples)
@@ -81,13 +81,13 @@ await pg.query(query);
 - [Related Projects](#related-projects)
 - [License](#license)
 
-# Installation
+## Installation
 
 ```bash
 npm i pgsmith
 ```
 
-# Examples
+## Examples
 
 ### 💬 Tagged Template Example
 
@@ -178,7 +178,7 @@ const query = sqlBuilder(sql`SELECT * FROM users`)
 // [1, 'active', 'admin', 'editor']
 ```
 
-# Using with `pg`
+## Using with `pg`
 
 `pgsmith` works seamlessly with [`pg`](https://github.com/brianc/node-postgres), the most popular PostgreSQL client for Node.js.
 
@@ -200,7 +200,7 @@ console.log(result.rows);
 // → [{ id: 42, name: 'Alice', ... }]
 ```
 
-# Philosophy
+## Philosophy
 
 Most SQL libraries either go too far or not far enough.
 
@@ -211,13 +211,13 @@ Most SQL libraries either go too far or not far enough.
 
 > Write SQL the way you want — clearly and safely.
 
-# Contributing
+## Contributing
 
 - ⭐ Star this repo if you like it!
 - 🐛 Open an [issue](https://github.com/mhweiner/pgsmith/issues) for bugs or suggestions.
 - 🤝 Submit a PR to `main` — all tests must pass.
 
-# Related Projects
+## Related Projects
 
 - [autorel](https://github.com/mhweiner/autorel): Automate semantic releases based on conventional commits. Similar to semantic-release but much simpler.
 - [hoare](https://github.com/mhweiner/hoare): An easy-to-use, fast, and defensive JS/TS test runner designed to help you to write simple, readable, and maintainable tests.
