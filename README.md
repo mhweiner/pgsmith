@@ -14,61 +14,35 @@
 This is **not** an ORM or DSL. It’s a simple, composable SQL builder that lets you write SQL the way you want — clearly and safely.
 
 ```ts
-/*** Tagged template ***/
-
 const emails = ['alice@example.com', 'bob@example.com'];
-const query = sql`SELECT * FROM users WHERE email IN (${emails}) AND is_active = ${true}`;
+const query = sql`
+  SELECT * 
+  FROM users 
+  WHERE email IN (${emails}) AND is_active = ${true}
+`;
 
 // query.text:
 // SELECT * FROM users WHERE email IN ($1, $2) AND is_active <= $3
 // query.values:
 // ['alice@example.com', 'bob@example.com', true]
-
-/*** Conditional query building ***/
-
-const data = {
-  id: 42,
-  role: ['admin', 'editor'],
-  order: 'created_at DESC',
-}
-
-const builder = sqlBuilder(sql`SELECT * FROM users WHERE 1=1`);
-
-builder.add(sql`AND id = ${data.id}`);
-builder.add(sql`AND role IN (${data.role})`);
-builder.add(sql`ORDER BY ${raw('data.order')}`);
-
-const query = builder.build();
-
-await pg.query(query);
-
-// query.text:
-// SELECT * FROM users WHERE 1=1 AND id = $1 AND role IN ($3, $4) ORDER BY created_at DESC
-// query.values:
-// [42, 'admin', 'editor']
 ```
 
-**🔐 Safe and Convenient**  
+**🔐 Safe, Convenient, and Performant**  
 - Automatically numbers placeholders (`$1`, `$2`, …) to prevent SQL injection.  
-- Plays nicely with parameterized queries and prepared statements.
+- Makes it easier to use prepared statements with `pg` for better performance.
+- Automatically expands arrays into `IN ($1, $2, ...)`.
+- Returns `{text, values}` — drop-in compatible with `pg.query()`.
 
-**🧰 Flexible Builder API**  
+**🧰 Flexible Builder API** 
 - Dynamically build queries with conditionals or loops.  
 - Easily compose from reusable parts.
 
 **🛠️ Object Helpers**  
-- Generate `INSERT`, `UPDATE`, and `WHERE` clauses [from objects](docs/api.md).
+- Generate `INSERT`, `UPDATE`, `WHERE`, `UNNEST`, and other SQL Fragments [from objects](docs/api.md).
 
-**🎯 Works with `pg`**  
-- Returns `{text, values}` — drop-in compatible with `pg.query()`.
-
-**💬 Template Literal Support**  
-- Use [tagged templates](#tagged-template-example) for inline queries.  
-- Automatically expands arrays into `IN ($1, $2, ...)` style.
-
-**📦 Zero Dependencies, TypeScript Native**  
+**📦 Tested & Stable**  
 - Fully typed, 100% test coverage  
-- No runtime dependencies or bloat
+- Zero dependencies, no bloat
 
 ## Table of Contents
 
