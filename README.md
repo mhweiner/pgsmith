@@ -136,6 +136,10 @@ const query = buildInsert('users', user, { returning: true });
 // ['Alice', 'Smith', 'alice@example.com', true]
 ```
 
+If you're inserting many rows, or want to take advantage of prepared statements, use `UNNEST` via [`buildUnnest`](docs/api.md#buildunnest).
+
+`UNNEST` can offer massive performance improvements for large inserts, as it allows PostgreSQL to optimize the query execution plan.
+
 ### 🧩 Composition Example
 
 ```ts
