@@ -210,6 +210,10 @@ Throws if the object is empty.
 
 ### `buildUnnest`
 
+```ts
+buildUnnest<T>(spec: SchemaSpec<T>): (rows: T[]) => UnnestResult
+```
+
 A reusable helper to generate SQL-safe `UNNEST(...)` clauses from a list of typed rows — complete with type-safe schema definition, column-aligned parameter arrays, and casted SQL fragments for use with PostgreSQL bulk inserts.
 
 This design allows you to declaratively define column types and logic in one place — with consistent output for UNNEST-based inserts. It generates the necessary SQL fragments and parameter arrays for you, so you can focus on your data and logic.
