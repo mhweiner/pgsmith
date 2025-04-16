@@ -9,7 +9,7 @@
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 [![AutoRel](https://img.shields.io/badge/v2-AutoRel?label=AutoRel&labelColor=0ab5fc&color=grey&link=https%3A%2F%2Fgithub.com%2Fmhweiner%2Fautorel)](https://github.com/mhweiner/autorel)
 
-**pgsmith** is a utility for safely building parameterized SQL queries for use with [`pg`](https://github.com/brianc/node-postgres).
+**pgsmith** is a utility for safely building parameterized SQL queries for use with Postgres and [`pg`](https://github.com/brianc/node-postgres).
 
 This is **not** an ORM or DSL. It’s a simple, composable SQL builder that lets you write SQL the way you want — clearly and safely.
 
