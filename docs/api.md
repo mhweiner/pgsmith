@@ -216,7 +216,7 @@ This design allows you to declaratively define column types and logic in one pla
 
 ```ts
 
-import {buildUnnest} from 'tiny-pg-builder';
+import {buildUnnest} from 'pgsmith';
 
 // 1. Define your row type and prepare your data
 

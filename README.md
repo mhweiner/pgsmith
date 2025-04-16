@@ -1,11 +1,15 @@
-# tiny-pg-builder
+<picture>
+    <source srcset="docs/pgsmith-white.svg" media="(prefers-color-scheme: dark)">
+    <source srcset="docs/pgsmith-black.svg" media="(prefers-color-scheme: light)">
+    <img src="docs/pgsmith-black.svg" alt="Logo" style="margin: 0 0 10px" size="250">
+</picture>
 
-[![build status](https://github.com/mhweiner/tiny-pg-builder/actions/workflows/release.yml/badge.svg)](https://github.com/mhweiner/tiny-pg-builder/actions)
+[![build status](https://github.com/mhweiner/pgsmith/actions/workflows/release.yml/badge.svg)](https://github.com/mhweiner/pgsmith/actions)
 [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-blue)]()
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 [![AutoRel](https://img.shields.io/badge/v2-AutoRel?label=AutoRel&labelColor=0ab5fc&color=grey&link=https%3A%2F%2Fgithub.com%2Fmhweiner%2Fautorel)](https://github.com/mhweiner/autorel)
 
-**tiny-pg-builder** is a utility for safely building parameterized SQL queries for use with [`pg`](https://github.com/brianc/node-postgres).
+**pgsmith** is a utility for safely building parameterized SQL queries for use with [`pg`](https://github.com/brianc/node-postgres).
 
 This is **not** an ORM or DSL. It’s a simple, composable SQL builder that lets you write SQL the way you want — clearly and safely.
 
@@ -66,7 +70,7 @@ await pg.query(query);
 - Fully typed, 100% test coverage  
 - No runtime dependencies or bloat
 
-## Table of Contents
+# Table of Contents
 
 - [Installation](#installation)
 - [Examples](#examples)
@@ -77,18 +81,18 @@ await pg.query(query);
 - [Related Projects](#related-projects)
 - [License](#license)
 
-## Installation
+# Installation
 
 ```bash
-npm i tiny-pg-builder
+npm i pgsmith
 ```
 
-## Examples
+# Examples
 
 ### Tagged Template Example
 
 ```ts
-import {sql} from 'tiny-pg-builder';
+import {sql} from 'pgsmith';
 
 const ids = [33, 22, 11];
 
@@ -110,7 +114,7 @@ const query = sql`
 ### Builder API Example
 
 ```ts
-import {sql, sqlBuilder, raw} from 'tiny-pg-builder';
+import {sql, sqlBuilder, raw} from 'pgsmith';
 
 // example data, could be anything
 const data = {
@@ -140,7 +144,7 @@ See a more real-world example of dynamic query building [here](docs/dynamicSearc
 ### 📝 Insert From Object Example
 
 ```ts
-import { buildInsert } from 'tiny-pg-builder';
+import { buildInsert } from 'pgsmith';
 
 const user = {
   firstName: 'Alice',
@@ -161,7 +165,7 @@ const query = buildInsert('users', user, { returning: true });
 ### 🧩 Composition Example
 
 ```ts
-import { sql, sqlBuilder, buildWhere } from 'tiny-pg-builder';
+import { sql, sqlBuilder, buildWhere } from 'pgsmith';
 
 const query = sqlBuilder(sql`SELECT * FROM users`)
   .add(buildWhere({id: 1, status: 'active', role: ['admin', 'editor']}))
@@ -174,14 +178,14 @@ const query = sqlBuilder(sql`SELECT * FROM users`)
 // [1, 'active', 'admin', 'editor']
 ```
 
-## Using with `pg`
+# Using with `pg`
 
-`tiny-pg-builder` works seamlessly with [`pg`](https://github.com/brianc/node-postgres), the most popular PostgreSQL client for Node.js.
+`pgsmith` works seamlessly with [`pg`](https://github.com/brianc/node-postgres), the most popular PostgreSQL client for Node.js.
 
 Just pass the `{ text, values }` object directly to `pg.query()`:
 
 ```ts
-import { sql } from 'tiny-pg-builder';
+import { sql } from 'pgsmith';
 import { Client } from 'pg';
 
 const client = new Client();
@@ -196,21 +200,21 @@ console.log(result.rows);
 // → [{ id: 42, name: 'Alice', ... }]
 ```
 
-## Philosophy
+# Philosophy
 
 Most SQL libraries either go too far or not far enough.
 
 - Some are **too low-level**, forcing you to manually manage strings and `$1` bindings.
 - Others are **too high-level**, hiding SQL behind complex DSLs or ORMs.
 
-`tiny-pg-builder` doesn’t try to replace SQL. It gives you a tiny, composable toolset that lets you work *with* SQL — clearly, safely, and without repetition or risk.
+`pgsmith` doesn’t try to replace SQL. It gives you a tiny, composable toolset that lets you work *with* SQL — clearly, safely, and without repetition or risk.
 
 > Write SQL the way you want — clearly and safely.
 
-## Contributing
+# Contributing
 
 - ⭐ Star this repo if you like it!
-- 🐛 Open an [issue](https://github.com/mhweiner/tiny-pg-builder/issues) for bugs or suggestions.
+- 🐛 Open an [issue](https://github.com/mhweiner/pgsmith/issues) for bugs or suggestions.
 - 🤝 Submit a PR to `main` — all tests must pass.
 
 # Related Projects

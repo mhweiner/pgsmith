@@ -1,7 +1,7 @@
 # Dynamic Search Query Example
 
 ```ts
-import {sqlBuilder, sql, raw} from 'tiny-pg-builder';
+import {sqlBuilder, sql, raw} from 'pgsmith';
 import {Client} from 'pg';
 
 const pg = new Client(); // or use pg.Pool if that's what you're using
