@@ -27,9 +27,9 @@ const query = sql`
 // ['alice@example.com', 'bob@example.com', true]
 ```
 
-**🔐 Safe, Convenient, and Performant**  
+**🔐 Safe & Convenient**  
 - Automatically numbers placeholders (`$1`, `$2`, …) to prevent SQL injection.  
-- Much easier to use prepared statements with `pg` for better performance 🚀
+- Much easier to use prepared statements for better performance 🚀
 - Automatically expands arrays into `IN ($1, $2, ...)`.
 - Returns `{text, values}` — drop-in compatible with `pg.query()`.
 
