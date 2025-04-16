@@ -174,6 +174,10 @@ console.log(result.rows);
 // → [{ id: 42, name: 'Alice', ... }]
 ```
 
+## API Reference
+
+See the [API Reference](docs/api.md) for detailed documentation on all functions and types.
+
 ## Philosophy
 
 Most SQL libraries either go too far or not far enough.
