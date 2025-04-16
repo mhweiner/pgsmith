@@ -152,6 +152,8 @@ const query = sqlBuilder(sql`SELECT * FROM users`)
 // [1, 'active', 'admin', 'editor']
 ```
 
+There are more examples in the [API Reference](docs/api.md).
+
 ## Using with `pg`
 
 `pgsmith` works seamlessly with [`pg`](https://github.com/brianc/node-postgres), the most popular PostgreSQL client for Node.js.
