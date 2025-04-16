@@ -34,9 +34,9 @@ const data = {
 
 const builder = sqlBuilder(sql`SELECT * FROM users WHERE 1=1`);
 
-data.id && builder.add(sql`AND id = ${data.id}`);
-data.role && builder.add(sql`AND role IN (${data.role})`);
-data.order && builder.add(sql`ORDER BY ${raw('data.order')}`);
+builder.add(sql`AND id = ${data.id}`);
+builder.add(sql`AND role IN (${data.role})`);
+builder.add(sql`ORDER BY ${raw('data.order')}`);
 
 const query = builder.build();
 
