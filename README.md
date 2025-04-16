@@ -11,7 +11,7 @@
 
 **pgsmith** is a utility for safely building parameterized SQL queries for use with [`pg`](https://github.com/brianc/node-postgres).
 
-This is **not** an ORM or DSL. It’s a simple, composable SQL builder that lets you write SQL the way you want — clearly and safely. 
+This is **not** an ORM or DSL. It’s a simple, composable SQL builder that lets you write SQL the way you want — clearly and safely.
 
 ```ts
 /*** Tagged template ***/
@@ -89,7 +89,7 @@ npm i pgsmith
 
 # Examples
 
-### Tagged Template Example
+### 💬 Tagged Template Example
 
 ```ts
 import {sql} from 'pgsmith';
@@ -111,7 +111,7 @@ const query = sql`
 // [33, 22, 11, 5]
 ```
 
-### Builder API Example
+### 🛠️ Builder API Example
 
 ```ts
 import {sql, sqlBuilder, raw} from 'pgsmith';
