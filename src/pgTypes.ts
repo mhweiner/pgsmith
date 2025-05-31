@@ -45,4 +45,8 @@ export type PgBaseType =
   | 'tsvector' | 'tsquery';
 
 // A PostgreSQL type can be either a base type or an array of any base type
-export type PgType = PgBaseType | `${PgBaseType}[]`;
+export type PgType =
+  | PgBaseType
+  | `${PgBaseType}[]`
+  | `${PgBaseType}[][]`
+  | `${PgBaseType}[][][]`;
